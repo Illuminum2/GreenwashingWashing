@@ -6,7 +6,7 @@ class Site:
     base_url: str
     pages: list[Page] = field(default_factory=list)
 
-    def page_urls(self):
+    def page_urls(self) -> list[str]:
         return [page.url for page in self.pages] 
 
 @dataclass

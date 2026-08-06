@@ -3,13 +3,15 @@ import requests
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from html_to_markdown import ConversionOptions, convert
 
+from sites import Site
 
-def __parse_html_to_txt(html):
+
+def __parse_html_to_txt(html: str) -> str:
     return convert(html, ConversionOptions(output_format="plain")).content # Parse HTML to text
 
 
 
-def dynamic_crawl(site):
+def dynamic_crawl(site: Site) -> None:
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         browser_page = browser.new_page()
@@ -28,7 +30,7 @@ def dynamic_crawl(site):
 
 
 
-def static_crawl(site):
+def static_crawl(site: Site) -> None:
     for page in site.pages:
         request_page = requests.get(page.url)
 

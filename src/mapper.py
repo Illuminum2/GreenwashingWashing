@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 from sites import Site, Page
 
-def __crawl_sitemap(sitemap_url):
+def __crawl_sitemap(sitemap_url: str) -> list[str]:
     page = requests.get(sitemap_url)
     xmlSoup = BeautifulSoup(page.content, features="xml")
 
@@ -14,7 +14,7 @@ def __crawl_sitemap(sitemap_url):
 
 
 
-def map_site(base_url, sitemap_path="/sitemap.xml"):
+def map_site(base_url: str, sitemap_path="/sitemap.xml") -> Site:
     sitemap_urls = [base_url + sitemap_path]
     site = Site(base_url)
 
