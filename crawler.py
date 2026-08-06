@@ -93,6 +93,21 @@ def playwright_crawl(urls):
 
 
 
+def request_crawl(urls):
+    res = []
+
+    for url in urls:
+        page = requests.get(url)
+
+        content_html = str(BeautifulSoup(page.content, 'lxml').body) # Get only HTML within body tag
+        content_txt = convert(content_html, ConversionOptions(output_format="plain")).content # Parsed text from HTML
+
+        res.append(Site(url, content_txt))
+
+    return res
+
+
+
 def match_sites(prog, sites):
     matches = {}
 
