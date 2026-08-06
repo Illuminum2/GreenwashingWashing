@@ -12,5 +12,6 @@ class Site:
 @dataclass
 class Page:
     url: str
+    html: str = None
     content: str = None
     matches: list[str] = field(default_factory=list)

@@ -1,7 +1,8 @@
+import asyncio
 import re
 
 from mapper import map_site
-from crawler import dynamic_crawl, static_crawl
+from crawler import crawl_site
 from matcher import match_site
 
 
@@ -22,10 +23,10 @@ MATCH_PATTERNS = [
 
 
 
-if __name__ == '__main__':
+async def main():
     site = map_site(BASE_URL)
-
-    dynamic_crawl(site)
+    
+    await crawl_site(site, mode="static")
 
     pattern = '|'.join('(%s)' % case for case in MATCH_PATTERNS) # Merge patterns into one
     prog = re.compile(pattern, re.I)
@@ -37,3 +38,7 @@ if __name__ == '__main__':
         if page.matches:
             print(f"Page '{page.url}': ", end="")
             print (*page.matches, sep=", ")
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
