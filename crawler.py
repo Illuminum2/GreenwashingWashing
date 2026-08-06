@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -5,9 +7,6 @@ import re
 
 from playwright.sync_api import sync_playwright
 from html_to_markdown import convert, ConversionOptions
-
-from pathlib import Path
-import timeit
 
 
 SITE_URL = "https://books.toscrape.com"
@@ -24,6 +23,13 @@ MATCH_SPECIFICATION = [
     'ergi',
     'strom',
 ]
+
+
+
+@dataclass
+class Site:
+    url: str
+    content: str
 
 
 
@@ -64,43 +70,48 @@ def obtain_site_urls(url):
 
 
 def playwright_crawl(urls):
+    res = []
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
 
-        for (i, url) in enumerate(urls):
+        for url in urls:
             try:
                 page.goto(url, wait_until="load", timeout=5000)
-                print(url)
             except: # Do NOT do this
                 pass
 
-            htmlSoup = BeautifulSoup(page.content(), 'lxml')
+            content_html = str(BeautifulSoup(page.content(), 'lxml').body) # Get only HTML within body tag
+            content_txt = convert(content_html, ConversionOptions(output_format="plain")).content # Parsed text from HTML
 
-            with open(f"./results/{i}.html", "w", encoding="utf-8") as file:
-                file.write(convert(str(htmlSoup.body), ConversionOptions(output_format="plain")).content)
+            res.append(Site(url, content_txt))
 
         browser.close()
 
+    return res
 
 
-def match_files(prog):
-    directory = Path('results')
 
-    for path in directory.iterdir():
-        if path.is_file():
-            with open(str(path), "r", encoding="utf-8") as file:
-                for word in file.read().split():
-                    if prog.search(word):
-                        print(word)
+def match_sites(prog, sites):
+    matches = {}
+
+    for site in sites:
+        for word in site.content.split():
+            if prog.search(word):
+                if not site.url in matches:
+                    matches[site.url] = []
+                matches[site.url].append(word)
+
+    return matches
 
 
 
 if __name__ == '__main__':
     urls = obtain_site_urls(SITE_URL)
 
-    playwright_crawl(urls)
+    sites = playwright_crawl(urls)
 
     pattern = '|'.join('(%s)' % case for case in MATCH_SPECIFICATION)
     prog = re.compile(pattern, re.I)
-    match_files(prog)
+    print(match_sites(prog, sites))
