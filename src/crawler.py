@@ -1,39 +1,53 @@
-import requests
+import aiohttp
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
-from html_to_markdown import ConversionOptions, convert
+from playwright.async_api import async_playwright, BrowserContext as PlaywrightBrowserContext, TimeoutError as PlaywrightTimeoutError
+from html_to_markdown import convert, ConversionOptions
 
-from sites import Site
-
-
-def __parse_html_to_txt(html: str) -> str:
-    return convert(html, ConversionOptions(output_format="plain")).content # Parse HTML to text
+from sites import Site, Page
 
 
-
-def dynamic_crawl(site: Site) -> None:
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        browser_page = browser.new_page()
-
-        for page in site.pages:
-            try:
-                browser_page.goto(page.url, wait_until="load", timeout=5000)
-            except PlaywrightTimeoutError:
-                pass # Pass because parts of page might still have loaded
-
-            content_txt = __parse_html_to_txt(browser_page.content())
-
-            page.content = content_txt
-
-        browser.close()
+async def __fetch_static_html(session: aiohttp.ClientSession, page: Page) -> None:
+    async with session.get(page.url) as response:
+        page.html = await response.text()
 
 
 
-def static_crawl(site: Site) -> None:
-    for page in site.pages:
-        request_page = requests.get(page.url)
+async def __fetch_dynamic_html(context: PlaywrightBrowserContext, page: Page, max_instances=10) -> None:
+    playwright_page = await context.new_page() # Creating a new page here is faster as page load can be started immediately
 
-        content_txt = __parse_html_to_txt(request_page.content)
+    try:
+        await playwright_page.goto(page.url, wait_until="load", timeout=10000)
+    except PlaywrightTimeoutError:
+        pass # Pass because parts of page might still have loaded
 
-        page.content = content_txt
+    page.html = await playwright_page.content()
+
+
+
+def __parse_html_to_txt(page: Page) -> None:
+    page.content = convert(page.html, ConversionOptions(output_format="plain")).content # Parse HTML to text
+
+
+
+async def crawl_site(site: Site, mode="static") -> None:
+    if mode == "static":
+        async with aiohttp.ClientSession() as session:
+            tasks = [__fetch_static_html(session, page) for page in site.pages]
+            await asyncio.gather(*tasks)
+    elif mode == "dynamic":
+        async with async_playwright() as playwright:
+            browser = await playwright.chromium.launch()
+            context = await browser.new_context()
+
+            await context.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "stylesheet", "font"] else route.continue_())
+
+            tasks = [__fetch_dynamic_html(context, page) for page in site.pages]
+            await asyncio.gather(*tasks)
+
+            await context.close()
+            await browser.close()
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        executor.map(__parse_html_to_txt, site.pages)
