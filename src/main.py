@@ -31,5 +31,9 @@ if __name__ == '__main__':
     prog = re.compile(pattern, re.I)
     match_site(prog, site)
 
+    #[print(f"Page '{page.url}': {', '.join(map(str, page.matches))}") for page in site.pages if page.matches]
+
     for page in site.pages:
-        print(f"Page '{page.url}': {page.matches}")
+        if page.matches:
+            print(f"Page '{page.url}': ", end="")
+            print (*page.matches, sep=", ")
