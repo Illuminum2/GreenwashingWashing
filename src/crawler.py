@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import requests
 
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 from html_to_markdown import ConversionOptions, convert
 
@@ -25,8 +25,8 @@ def dynamic_crawl(urls):
         for url in urls:
             try:
                 page.goto(url, wait_until="load", timeout=5000)
-            except: # Do NOT do this
-                pass
+            except PlaywrightTimeoutError:
+                pass # Pass because part of page might still have loaded
 
             content_html = page.content()
             content_txt = convert(content_html, ConversionOptions(output_format="plain")).content # Parsed text from HTML
