@@ -10,71 +10,9 @@ from pathlib import Path
 import timeit
 
 
-siteUrl = "https://books.toscrape.com"
+SITE_URL = "https://books.toscrape.com"
 
-
-
-def crawl_sitemap(url):
-    page = requests.get(url)
-    xmlSoup = BeautifulSoup(page.content, features="xml")
-
-    urls = xmlSoup.find_all('loc')
-    res = []
-    for url in urls:
-        res.append(url.contents[0])
-
-    return res
-
-
-
-urls = [f"{siteUrl}/sitemap.xml"]
-prog = re.compile(r"[^?]+\.xml")
-
-sitemap = []
-
-i = 0
-
-while i < len(urls):
-    res = crawl_sitemap(urls[i])
-
-    for r in res:
-        if not prog.match(r):
-            if r not in sitemap:
-                sitemap.append(r)
-        elif r not in urls:
-            urls.append(r)
-    
-    i += 1
-
-
-
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False)
-    page = browser.new_page()
-
-    i = 0
-    for url in sitemap:
-        try:
-            page.goto(url, wait_until="load", timeout=5000)
-            print(url)
-        except: # Do NOT do this
-            pass
-
-        htmlSoup = BeautifulSoup(page.content(), 'lxml')
-        #texts = htmlSoup.find_all(string=True)
-
-        with open(f"./results/{i}.html", "w", encoding="utf-8") as file:
-            #file.writelines(textx)
-            file.write(convert(str(htmlSoup.body), ConversionOptions(output_format="plain")).content)
-
-        i += 1
-
-
-    browser.close()
-
-
-
-match_specification = [
+MATCH_SPECIFICATION = [
     'öko',
     'bio',
     'umwe',
@@ -87,30 +25,82 @@ match_specification = [
     'strom',
 ]
 
-pattern = '|'.join('(%s)' % case for case in match_specification)
-#pattern = f"\\w*{pattern}\\w*" # Really bad performance
-prog = re.compile(pattern, re.I)
-
-directory = Path('results')
-
-for path in directory.iterdir():
-    if path.is_file():
-        with open(str(path), "r", encoding="utf-8") as file:
-            #matches = prog.findall(file.read())
-            for word in file.read().split():
-                if prog.search(word):
-                    print(word)
 
 
+def crawl_sitemap(sitemap_url):
+    page = requests.get(sitemap_url)
+    xmlSoup = BeautifulSoup(page.content, features="xml")
 
-#\wöko\w/gi
-#\wbio\w/gi
-#\wumwe\w/gi
-#\wgrün\w/gi
-#\wachhal\w/gi
-#\wneuerb\w/gi
-#\wemission\w/gi
-#\weutr\w/gi
-#\wCO\w/g
-#\wergi\w/gi
-#\wstrom\w/gi
+    result_urls = xmlSoup.find_all('loc')
+    res = []
+    for url in result_urls:
+        res.append(url.contents[0])
+
+    return res
+
+
+
+def obtain_site_urls(url):
+    sitemap_urls = [f"{url}/sitemap.xml"]
+    prog = re.compile(r"[^?]+\.xml")
+
+    site_urls = []
+    
+    i = 0
+    while i < len(sitemap_urls):
+        res = crawl_sitemap(sitemap_urls[i])
+
+        for r in res:
+            if not prog.match(r):
+                if r not in site_urls:
+                    site_urls.append(r)
+            elif r not in sitemap_urls:
+                sitemap_urls.append(r)
+        
+        i += 1
+
+    return site_urls
+
+
+
+def playwright_crawl(urls):
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+        page = browser.new_page()
+
+        for (i, url) in enumerate(urls):
+            try:
+                page.goto(url, wait_until="load", timeout=5000)
+                print(url)
+            except: # Do NOT do this
+                pass
+
+            htmlSoup = BeautifulSoup(page.content(), 'lxml')
+
+            with open(f"./results/{i}.html", "w", encoding="utf-8") as file:
+                file.write(convert(str(htmlSoup.body), ConversionOptions(output_format="plain")).content)
+
+        browser.close()
+
+
+
+def match_files(prog):
+    directory = Path('results')
+
+    for path in directory.iterdir():
+        if path.is_file():
+            with open(str(path), "r", encoding="utf-8") as file:
+                for word in file.read().split():
+                    if prog.search(word):
+                        print(word)
+
+
+
+if __name__ == '__main__':
+    urls = obtain_site_urls(SITE_URL)
+
+    playwright_crawl(urls)
+
+    pattern = '|'.join('(%s)' % case for case in MATCH_SPECIFICATION)
+    prog = re.compile(pattern, re.I)
+    match_files(prog)
