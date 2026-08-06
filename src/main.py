@@ -1,15 +1,13 @@
 import re
 
-
 from mapper import map_site
 from crawler import dynamic_crawl, static_crawl
-from matcher import match_sites
+from matcher import match_site
 
 
+BASE_URL = "https://www.bluechip.at"
 
-SITE_URL = "https://www.bluechip.at"
-
-MATCH_SPECIFICATION = [
+MATCH_PATTERNS = [
     'öko',
     'bio',
     'umwe',
@@ -25,10 +23,13 @@ MATCH_SPECIFICATION = [
 
 
 if __name__ == '__main__':
-    urls = map_site(SITE_URL)
+    site = map_site(BASE_URL)
 
-    sites = dynamic_crawl(urls)
+    dynamic_crawl(site)
 
-    pattern = '|'.join('(%s)' % case for case in MATCH_SPECIFICATION)
+    pattern = '|'.join('(%s)' % case for case in MATCH_PATTERNS) # Merge patterns into one
     prog = re.compile(pattern, re.I)
-    print(match_sites(prog, sites))
+    match_site(prog, site)
+
+    for page in site.pages:
+        print(f"Page '{page.url}': {page.matches}")

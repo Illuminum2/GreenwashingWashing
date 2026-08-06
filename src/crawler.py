@@ -1,53 +1,37 @@
-from dataclasses import dataclass
 import requests
 
-
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
-
 from html_to_markdown import ConversionOptions, convert
 
 
-
-@dataclass
-class Site:
-    url: str
-    content: str
+def __parse_html_to_txt(html):
+    return convert(html, ConversionOptions(output_format="plain")).content # Parse HTML to text
 
 
 
-def dynamic_crawl(urls):
-    res = []
-
+def dynamic_crawl(site):
     with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
+        browser = p.chromium.launch(headless=False)
+        browser_page = browser.new_page()
 
-        for url in urls:
+        for page in site.pages:
             try:
-                page.goto(url, wait_until="load", timeout=5000)
+                browser_page.goto(page.url, wait_until="load", timeout=5000)
             except PlaywrightTimeoutError:
-                pass # Pass because part of page might still have loaded
+                pass # Pass because parts of page might still have loaded
 
-            content_html = page.content()
-            content_txt = convert(content_html, ConversionOptions(output_format="plain")).content # Parsed text from HTML
+            content_txt = __parse_html_to_txt(browser_page.content())
 
-            res.append(Site(url, content_txt))
+            page.content = content_txt
 
         browser.close()
 
-    return res
 
 
+def static_crawl(site):
+    for page in site.pages:
+        request_page = requests.get(page.url)
 
-def static_crawl(urls):
-    res = []
+        content_txt = __parse_html_to_txt(request_page.content)
 
-    for url in urls:
-        page = requests.get(url)
-
-        content_html = page.content()
-        content_txt = convert(content_html, ConversionOptions(output_format="plain")).content # Parsed text from HTML
-
-        res.append(Site(url, content_txt))
-
-    return res
+        page.content = content_txt
