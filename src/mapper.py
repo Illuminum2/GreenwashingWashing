@@ -5,9 +5,10 @@ from bs4 import BeautifulSoup
 
 from sites import Site, Page
 
+
 def __crawl_sitemap(sitemap_url: str) -> list[str]:
     page = requests.get(sitemap_url)
-    xmlSoup = BeautifulSoup(page.content, features="lxml")
+    xmlSoup = BeautifulSoup(page.content, features="xml")
 
     url_elements = xmlSoup.find_all('loc') # Extract all link elements from sitemap
     return [url.text for url in url_elements] # Extract links from all link elements
