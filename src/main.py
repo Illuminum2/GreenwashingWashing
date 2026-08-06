@@ -1,9 +1,9 @@
 import asyncio
 import re
 
-from mapper import map_site
-from crawler import crawl_site
-from matcher import match_site
+from mapper import Mapper
+from crawler import Crawler
+from matcher import Matcher
 
 
 BASE_URL = "https://www.bluechip.at"
@@ -22,15 +22,14 @@ MATCH_PATTERNS = [
 ]
 
 
-
 async def main():
-    site = map_site(BASE_URL)
+    site = Mapper.map_site(BASE_URL)
     
-    await crawl_site(site, mode="static")
+    await Crawler.crawl_site(site, mode="static")
 
     pattern = '|'.join('(%s)' % case for case in MATCH_PATTERNS) # Merge patterns into one
     prog = re.compile(pattern, re.I)
-    match_site(prog, site)
+    Matcher.match_site(prog, site)
 
     #[print(f"Page '{page.url}': {', '.join(map(str, page.matches))}") for page in site.pages if page.matches]
 
