@@ -1,11 +1,5 @@
-def match_sites(prog, sites):
-    matches = {}
-
-    for site in sites:
-        for word in site.content.split():
-            if prog.search(word):
-                if not site.url in matches:
-                    matches[site.url] = []
-                matches[site.url].append(word)
-
-    return matches
+def match_site(pattern_prog, site):
+    for page in site.pages:
+        for word in page.content.split():
+            if pattern_prog.search(word):
+                page.matches.append(word)

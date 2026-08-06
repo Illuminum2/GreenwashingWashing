@@ -1,41 +1,36 @@
 import re
 import requests
 
-
 from bs4 import BeautifulSoup
 
-
+from sites import Site, Page
 
 def __crawl_sitemap(sitemap_url):
     page = requests.get(sitemap_url)
     xmlSoup = BeautifulSoup(page.content, features="xml")
 
-    result_urls = xmlSoup.find_all('loc')
-    res = []
-    for url in result_urls:
-        res.append(url.contents[0])
-
-    return res
+    url_elements = xmlSoup.find_all('loc') # Extract all link elements from sitemap
+    return [url.text for url in url_elements] # Extract links from all link elements
 
 
 
-def map_site(url):
-    sitemap_urls = [f"{url}/sitemap.xml"]
-    prog = re.compile(r"[^?]+\.xml")
+def map_site(base_url, sitemap_path="/sitemap.xml"):
+    sitemap_urls = [base_url + sitemap_path]
+    site = Site(base_url)
 
-    site_urls = []
+    xml_prog = re.compile(r"[^?]+\.xml") # Pattern for matching XML sitemaps
     
     i = 0
     while i < len(sitemap_urls):
-        res = __crawl_sitemap(sitemap_urls[i])
+        res_urls = __crawl_sitemap(sitemap_urls[i])
 
-        for r in res:
-            if not prog.match(r):
-                if r not in site_urls:
-                    site_urls.append(r)
-            elif r not in sitemap_urls:
-                sitemap_urls.append(r)
+        for url in res_urls:
+            if not xml_prog.match(url):
+                if url not in site.page_urls():
+                    site.pages.append(Page(url))
+            elif url not in sitemap_urls:
+                sitemap_urls.append(url)
         
         i += 1
 
-    return site_urls
+    return site
