@@ -4,7 +4,6 @@ import requests
 
 from playwright.sync_api import sync_playwright
 
-from bs4 import BeautifulSoup
 from html_to_markdown import ConversionOptions, convert
 
 
@@ -29,7 +28,7 @@ def dynamic_crawl(urls):
             except: # Do NOT do this
                 pass
 
-            content_html = str(BeautifulSoup(page.content(), 'lxml').body) # Get only HTML within body tag
+            content_html = page.content()
             content_txt = convert(content_html, ConversionOptions(output_format="plain")).content # Parsed text from HTML
 
             res.append(Site(url, content_txt))
@@ -46,7 +45,7 @@ def static_crawl(urls):
     for url in urls:
         page = requests.get(url)
 
-        content_html = str(BeautifulSoup(page.content, 'lxml').body) # Get only HTML within body tag
+        content_html = page.content()
         content_txt = convert(content_html, ConversionOptions(output_format="plain")).content # Parsed text from HTML
 
         res.append(Site(url, content_txt))
