@@ -76,5 +76,5 @@ class Crawler:
                 await context.close()
                 await browser.close()
 
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            executor.map(Crawler.__parse_html_to_txt, site.pages)
+        with ThreadPoolExecutor(max_workers=concurrent_instances) as executor:
+            executor.map(Crawler._parse_html_to_txt, site.pages)
