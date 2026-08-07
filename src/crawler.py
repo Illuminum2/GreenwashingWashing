@@ -12,7 +12,7 @@ from sites import Site, Page
 
 class Crawler:
     @staticmethod
-    async def _fetch_static_html(session: aiohttp.ClientSession, page: Page, semaphore: asyncio.Semaphore | None) -> None:
+    async def _fetch_static_html(page: Page, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore | None) -> None:
         try:
             if semaphore:
                 await semaphore.acquire() # Done manually to allow optional semaphore
@@ -36,7 +36,7 @@ class Crawler:
 
 
     @staticmethod
-    async def _fetch_dynamic_html(context: PlaywrightBrowserContext, page: Page, semaphore: asyncio.Semaphore | None) -> None:
+    async def _fetch_dynamic_html(page: Page, context: PlaywrightBrowserContext, semaphore: asyncio.Semaphore | None) -> None:
         try:
             if semaphore:
                 await semaphore.acquire() # Done manually to allow optional semaphore
@@ -75,7 +75,7 @@ class Crawler:
         
         if mode == "static":
             async with aiohttp.ClientSession() as session:
-                tasks = [Crawler._fetch_static_html(session, page, semaphore) for page in site.pages]
+                tasks = [Crawler._fetch_static_html(page, session, semaphore) for page in site.pages]
                 await asyncio.gather(*tasks)
         elif mode == "dynamic":
             async with async_playwright() as playwright:
@@ -84,7 +84,7 @@ class Crawler:
 
                 await context.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "stylesheet", "font"] else route.continue_())
 
-                tasks = [Crawler._fetch_dynamic_html(context, page, semaphore) for page in site.pages]
+                tasks = [Crawler._fetch_dynamic_html(page, context, semaphore) for page in site.pages]
                 await asyncio.gather(*tasks)
 
                 await context.close()
