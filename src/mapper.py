@@ -9,7 +9,7 @@ from sites import Site, Page
 
 class Mapper:
     @staticmethod
-    def __crawl_sitemap(sitemap_url: str) -> list[str]:
+    def _crawl_sitemap(sitemap_url: str) -> list[str]:
         page = requests.get(sitemap_url)
         xmlSoup = BeautifulSoup(page.content, features="xml")
 
@@ -26,7 +26,7 @@ class Mapper:
         
         i = 0
         while i < len(sitemap_urls):
-            res_urls = Mapper.__crawl_sitemap(sitemap_urls[i])
+            res_urls = Mapper._crawl_sitemap(sitemap_urls[i])
 
             for url in res_urls:
                 if not xml_prog.match(url):
