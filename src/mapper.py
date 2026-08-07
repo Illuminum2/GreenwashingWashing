@@ -18,7 +18,7 @@ class Mapper:
 
 
     @staticmethod
-    def map_site(base_url: str, sitemap_path="/sitemap.xml") -> Site:
+    def map_site(base_url: str, sitemap_path: str = "/sitemap.xml") -> Site:
         sitemap_urls = [base_url + sitemap_path]
         site = Site(base_url)
 
