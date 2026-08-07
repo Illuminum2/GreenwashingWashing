@@ -3,7 +3,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
-from playwright.async_api import async_playwright, BrowserContext as PlaywrightBrowserContext, TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import async_playwright, BrowserContext as PlaywrightBrowserContext, Error as PlaywrightError, TimeoutError as PlaywrightTimeoutError
 from html_to_markdown import convert, ConversionOptions
 
 from sites import Site, Page
@@ -17,9 +17,18 @@ class Crawler:
             if semaphore:
                 await semaphore.acquire() # Done manually to allow optional semaphore
             acquired = True
-        
-            async with session.get(page.url) as response:
-                page.html = await response.text()
+
+            try:
+                async with session.get(page.url) as response:
+                    page.html = await response.text()
+            except aiohttp.ClientResponseError as e:
+                print(f"Response exception '{type(e)}' was raised while accessing {page.url}: {e}")
+            except aiohttp.ClientConnectionError as e:
+                print(f"Connection exception '{type(e)}' was raised while accessing {page.url}: {e}")
+            except aiohttp.ClientPayloadError as e:
+                print(f"Payload exception '{type(e)}' was raised while accessing {page.url}: {e}")
+            except Exception as e:
+                print(f"Exception '{type(e)}' was raised while accessing {page.url}: {e}")
 
         finally:
             if semaphore and acquired:
@@ -36,11 +45,16 @@ class Crawler:
             playwright_page = await context.new_page() # Creating a new page here is faster as page load can be started immediately
 
             try:
-                await playwright_page.goto(page.url, wait_until="load", timeout=10000)
-            except PlaywrightTimeoutError:
-                pass # Pass because parts of page might still have loaded
+                try:
+                    await playwright_page.goto(page.url, wait_until="load", timeout=10000)
+                except PlaywrightTimeoutError: # Parts of page might still have loaded
+                    print(f"Playwright timeout exception was raised while accessing {page.url}, attempting to parse what loaded. Increasing timeout might help.")
 
-            page.html = await playwright_page.content()
+                page.html = await playwright_page.content()
+            except PlaywrightError as e:
+                print(f"Playwright exception '{e.name}' was raised while accessing {page.url}: {e.message}")
+            except Exception as e:
+                print(f"Exception '{type(e)}' was raised while accessing {page.url}: {e}")
 
             await playwright_page.close()
 
