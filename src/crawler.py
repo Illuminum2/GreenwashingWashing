@@ -51,6 +51,8 @@ class Crawler:
 
     @staticmethod
     def _parse_html_to_txt(page: Page) -> None:
+        if page.html:
+            page.content = convert(page.html, ConversionOptions(output_format="plain")).content # Parse HTML to text
 
 
     @staticmethod
