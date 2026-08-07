@@ -27,9 +27,7 @@ async def main():
     
     await Crawler.crawl_site(site, mode="static")
 
-    pattern = '|'.join('(%s)' % case for case in MATCH_PATTERNS) # Merge patterns into one
-    prog = re.compile(pattern, re.I)
-    Matcher.match_site(prog, site)
+    Matcher.match_site(site, MATCH_PATTERNS)
 
     #[print(f"Page '{page.url}': {', '.join(map(str, page.matches))}") for page in site.pages if page.matches]
 
