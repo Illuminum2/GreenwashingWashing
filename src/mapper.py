@@ -18,9 +18,8 @@ class Mapper:
 
 
     @staticmethod
-    def map_site(base_url: str, sitemap_path: str = "/sitemap.xml") -> Site:
-        sitemap_urls = [base_url + sitemap_path]
-        site = Site(base_url)
+    def map_site(site: Site, sitemap_path: str = "/sitemap.xml") -> None:
+        sitemap_urls = [site.base_url + sitemap_path]
 
         xml_prog = re.compile(r"[^?]+\.xml") # Pattern for matching XML sitemaps
         
@@ -36,5 +35,3 @@ class Mapper:
                     sitemap_urls.append(url)
             
             i += 1
-
-        return site

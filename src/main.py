@@ -5,6 +5,8 @@ from mapper import Mapper
 from crawler import Crawler
 from matcher import Matcher
 
+from sites import Site
+
 
 BASE_URL = "https://books.toscrape.com"
 
@@ -26,9 +28,8 @@ ANTI_MATCH_PATTERNS = [
 
 
 async def main():
-    site = Mapper.map_site(BASE_URL)
-    
-    await Crawler.crawl_site(site, mode="static")
+    site = Site(BASE_URL)
+    Mapper.map_site(site)
 
     Matcher.match_site(site, MATCH_PATTERNS, ANTI_MATCH_PATTERNS)
 
