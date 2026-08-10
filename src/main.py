@@ -9,16 +9,19 @@ from matcher import Matcher
 BASE_URL = "https://www.bluechip.at"
 
 MATCH_PATTERNS = [
-    'öko',
-    'bio',
-    'umwe',
-    'grün',
-    'achhal',
-    'neuerb',
-    'emission',
-    'eutr',
-    'ergi',
-    'strom',
+    "öko",
+    "bio",
+    "umwe",
+    "achhal",
+    "neuerb",
+    "emission",
+    "eutr",
+    "ergi",
+    "strom",
+]
+
+ANTI_MATCH_PATTERNS = [
+    "umweg"
 ]
 
 
@@ -27,7 +30,7 @@ async def main():
     
     await Crawler.crawl_site(site, mode="static")
 
-    Matcher.match_site(site, MATCH_PATTERNS)
+    Matcher.match_site(site, MATCH_PATTERNS, ANTI_MATCH_PATTERNS)
 
     #[print(f"Page '{page.url}': {', '.join(map(str, page.matches))}") for page in site.pages if page.matches]
 
