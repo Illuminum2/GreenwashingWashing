@@ -1,5 +1,5 @@
 import asyncio
-import re
+from concurrent.futures import ThreadPoolExecutor
 
 from mapper import Mapper
 from crawler import Crawler
@@ -27,13 +27,20 @@ ANTI_MATCH_PATTERNS = [
 ]
 
 
+concurrent_instances = 5
+
+
 async def main():
     site = Site(BASE_URL)
-    Mapper.map_site(site)
 
-    Matcher.match_site(site, MATCH_PATTERNS, ANTI_MATCH_PATTERNS)
+    with ThreadPoolExecutor(max_workers=concurrent_instances) as executor:
+        asyncio.get_running_loop().set_default_executor(executor)
 
-    #[print(f"Page '{page.url}': {', '.join(map(str, page.matches))}") for page in site.pages if page.matches]
+        Mapper.map_site(site)
+        
+        await Crawler.crawl_site(site, mode="static")
+
+        Matcher.match_site(site, MATCH_PATTERNS, ANTI_MATCH_PATTERNS)
 
     for page in site.pages:
         if page.matches:
