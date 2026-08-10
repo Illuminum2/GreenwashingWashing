@@ -7,41 +7,19 @@ from matcher import Matcher
 
 from sites import Site
 
-
-BASE_URL = "https://books.toscrape.com"
-
-MATCH_PATTERNS = [
-    "öko",
-    "bio",
-    "umwe",
-    "achhal",
-    "neuerb",
-    "emission",
-    "eutr",
-    "ergi",
-    "strom",
-]
-
-ANTI_MATCH_PATTERNS = [
-    "umweg"
-]
-
-
-concurrent_instances = 5
+from config import BASE_URL, CONCURRENT_WORKER_THREADS
 
 
 async def main():
     site = Site(BASE_URL)
 
-    with ThreadPoolExecutor(max_workers=concurrent_instances) as executor:
+    with ThreadPoolExecutor(max_workers=CONCURRENT_WORKER_THREADS if CONCURRENT_WORKER_THREADS and CONCURRENT_WORKER_THREADS >= 0 else None) as executor:
         asyncio.get_running_loop().set_default_executor(executor)
 
         Mapper.map_site(site)
-        
         await Crawler.crawl_site(site, mode="static")
-
-        Matcher.match_site(site, MATCH_PATTERNS, ANTI_MATCH_PATTERNS)
-
+        Matcher.match_site(site)
+    
     for page in site.pages:
         if page.matches:
             print(f"Page '{page.url}': ", end="")
