@@ -3,7 +3,6 @@ import re
 from sites import Site, Page
 
 
-
 class Matcher:
     @staticmethod
     def _compile_patterns(patterns: list[str]) -> re.Pattern | None:

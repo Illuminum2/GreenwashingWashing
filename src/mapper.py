@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from sites import Site, Page
 
 
-
 class Mapper:
     @staticmethod
     def _crawl_sitemap(sitemap_url: str) -> list[str]:

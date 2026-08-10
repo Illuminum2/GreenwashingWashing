@@ -16,7 +16,7 @@ class Network:
     )
 
 
-    def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE):
+    def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> Network:
         self._mode = mode
         self._session: aiohttp.ClientSession | None = None
         self._context = None
@@ -50,7 +50,7 @@ class Network:
                 return None
 
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Network:
         if self._mode == "static":
             self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=STATIC_SCRAPE_TIMEOUT / 100))
         else:
@@ -61,7 +61,7 @@ class Network:
         return self
 
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         if self._session:
             await self._session.close()
         if self._context:
