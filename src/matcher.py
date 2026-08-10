@@ -2,6 +2,8 @@ import re
 
 from sites import Site, Page
 
+from config import MATCH_PATTERNS, ANTI_MATCH_PATTERNS
+
 
 class Matcher:
     @staticmethod
@@ -17,12 +19,12 @@ class Matcher:
     def _match_page(page: Page, match_prog: re.Pattern, anti_prog: re.Pattern | None) -> None:
         if page.content:
             for word in page.content.split():
-                if match_prog.search(word) and (not anti_prog.search(word) if anti_prog else True):
+                if match_prog.search(word) and (not anti_prog.search(word) if anti_prog is not None else True):
                         page.matches.append(word)
 
 
     @staticmethod
-    def match_site(site: Site, match_patterns: list[str], anti_match_patterns: list[str]) -> None:
+    def match_site(site: Site, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = ANTI_MATCH_PATTERNS) -> None:
         if not match_patterns:
             raise ValueError('Empty list of match patterns provided')
 
