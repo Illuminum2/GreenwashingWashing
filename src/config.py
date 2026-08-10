@@ -28,4 +28,4 @@ DYNAMIC_SCRAPE_TIMEOUT = 10000 # Time in ms for playwright timeout
 
 SITEMAP_PATH = "/sitemap.xml"
 
-SCRAPING_MODE = "static" # static/dynamic
+DEFAULT_NETWORK_MODE = "static" # static/dynamic

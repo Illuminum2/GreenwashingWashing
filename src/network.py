@@ -5,7 +5,7 @@ from typing import Literal
 
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
 
-from config import CONCURRENT_NETWORK_REQUESTS, SCRAPING_MODE, DYNAMIC_SCRAPE_TIMEOUT, STATIC_SCRAPE_TIMEOUT
+from config import CONCURRENT_NETWORK_REQUESTS, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT, STATIC_SCRAPE_TIMEOUT
 
 
 class Network:
@@ -16,7 +16,7 @@ class Network:
     )
 
 
-    def __init__(self, mode: Literal['static', 'dynamic'] = SCRAPING_MODE):
+    def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE):
         self._mode = mode
         self._session: aiohttp.ClientSession | None = None
         self._context = None
