@@ -17,7 +17,7 @@ async def main():
         asyncio.get_running_loop().set_default_executor(executor)
 
         Mapper.map_site(site)
-        await Crawler.crawl_site(site, mode="static")
+        await Crawler.crawl_site(site)
         Matcher.match_site(site)
     
     for page in site.pages:
