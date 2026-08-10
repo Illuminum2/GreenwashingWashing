@@ -30,3 +30,4 @@ SITEMAP_PATH = "/sitemap.xml"
 
 DEFAULT_NETWORK_MODE = "static" # static/dynamic
 
+SCRAPING_MODE = "dynamic"

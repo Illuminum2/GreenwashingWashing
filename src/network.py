@@ -53,10 +53,15 @@ class Network:
     async def __aenter__(self) -> Network:
         if self._mode == "static":
             self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=STATIC_SCRAPE_TIMEOUT / 100))
-        else:
+        elif self._mode == "dynamic":
             self._playwright = await async_playwright().start()
-            self._browser = await self._playwright.chromium.launch()
+            self._browser = await self._playwright.chromium.launch(headless=False)
             self._context = await self._browser.new_context()
+
+            await self._context.route(
+                "**/*",
+                lambda route: route.abort() if route.request.resource_type in ["image", "stylesheet", "font"] else route.continue_()
+            )
 
         return self
 
