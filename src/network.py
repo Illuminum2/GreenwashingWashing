@@ -9,14 +9,15 @@ from config import CONCURRENT_NETWORK_REQUESTS, DEFAULT_NETWORK_MODE, DYNAMIC_SC
 
 
 class HTTPError(Exception):
-    def __init__(self, status: int, text: str, url: str) -> None:
-        super().__init__(text)
+    def __init__(self, status: int, reason: str, url: str) -> None:
+        super().__init__(reason)
         self.status = status
-        self.text = text
+        self.reason = reason
         self.url = url
 
     def __str__(self) -> str:
-        return f"Got response status code '{self.status}: {self.text}' while trying to access '{self.url}'"
+        return f"Got response status code '{self.status}: {self.reason}' while trying to access '{self.url}'"
+
 
 
 
@@ -66,6 +67,7 @@ class Network:
 
             except HTTPError as e:
                 print(e)
+                raise e
             except (aiohttp.ClientError, PlaywrightError) as e:
                 print(f"Exception '{type(e)}' was raised while trying to accessing '{url}': {e}")
 
