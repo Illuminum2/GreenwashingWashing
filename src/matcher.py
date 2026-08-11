@@ -2,7 +2,7 @@ import re
 
 from sites import Site, Page
 
-from config import MATCH_PATTERNS, ANTI_MATCH_PATTERNS
+from config import MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
 
 class Matcher:
@@ -16,20 +16,20 @@ class Matcher:
 
 
     @staticmethod
-    def _match_page(page: Page, match_prog: re.Pattern, anti_prog: re.Pattern | None) -> None:
+    def _match_page(page: Page, match_prog: re.Pattern, match_exclusion_prog: re.Pattern | None) -> None:
         if page.content:
             for word in page.content.split():
-                if match_prog.search(word) and (not anti_prog.search(word) if anti_prog is not None else True):
+                if match_prog.search(word) and (not match_exclusion_prog.search(word) if match_exclusion_prog is not None else True):
                         page.matches.append(word)
 
 
     @staticmethod
-    def match_site(site: Site, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = ANTI_MATCH_PATTERNS) -> None:
+    def match_site(site: Site, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = MATCH_EXCLUSION_PATTERNS) -> None:
         if not match_patterns:
             raise ValueError('Empty list of match patterns provided')
 
         match_prog = Matcher._compile_patterns(match_patterns)
-        anti_prog = Matcher._compile_patterns(anti_match_patterns)
+        match_exclusion_prog = Matcher._compile_patterns(anti_match_patterns)
 
         for page in site.pages:
-            Matcher._match_page(page, match_prog, anti_prog)
+            Matcher._match_page(page, match_prog, match_exclusion_prog)

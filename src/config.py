@@ -1,19 +1,25 @@
 BASE_URL = "https://books.toscrape.com"
 
 MATCH_PATTERNS = [
-    "öko",
-    "bio",
-    "umwe",
-    "achhal",
-    "neuerb",
-    "emission",
-    "eutr",
-    "ergi",
-    "strom",
+    r"öko",
+    r"bio",
+    r"umwe",
+    r"achhal",
+    r"neuerb",
+    r"emission",
+    r"eutr",
+    r"ergi",
+    r"strom",
 ]
 
-ANTI_MATCH_PATTERNS = [
-    "umweg"
+MATCH_EXCLUSION_PATTERNS = [
+    r"umweg"
+]
+
+URL_PATH_EXCLUSION_PATTERNS = []
+
+URL_PATH_SITEMAP_PATTERNS = [
+    r"\.xml$" # Default sitemap exclusion pattern
 ]
 
 CONCURRENT_WORKER_THREADS = 5 # -1 for unlimited, 0 for no worker threads
@@ -23,7 +29,7 @@ MAX_NETWORK_RETRIES = 5
 MIN_NETWORK_RETRY_DELAY = 1 # Minimum delay in seconds before retry attempt
 MAX_NETWORK_RETRY_DELAY = 20 # Maximum delay in seconds before retry attempt
 DEFAULT_NETWORK_MODE = "static" # static/dynamic
-STATIC_SCRAPE_TIMEOUT = 1000 # Time in ms for aiohttp timeout
+STATIC_SCRAPE_TIMEOUT = 5000 # Time in ms for aiohttp timeout
 DYNAMIC_SCRAPE_TIMEOUT = 10000 # Time in ms for playwright timeout
 
 SITEMAP_PATH = "/sitemap.xml"
