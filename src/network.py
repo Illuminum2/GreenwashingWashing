@@ -8,6 +8,18 @@ from playwright.async_api import async_playwright, Error as PlaywrightError, Tim
 from config import CONCURRENT_NETWORK_REQUESTS, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT, STATIC_SCRAPE_TIMEOUT
 
 
+class HTTPError(Exception):
+    def __init__(self, status: int, text: str, url: str) -> None:
+        super().__init__(text)
+        self.status = status
+        self.text = text
+        self.url = url
+
+    def __str__(self) -> str:
+        return f"Got response status code '{self.status}: {self.text}' while trying to access '{self.url}'"
+
+
+
 class Network:
     _semaphore: asyncio.Semaphore | None = (
         asyncio.Semaphore(CONCURRENT_NETWORK_REQUESTS)
@@ -31,6 +43,9 @@ class Network:
             try:
                 if self._mode == "static" and self._session:
                     async with self._session.get(url) as response:
+                        if not response.ok:
+                            raise HTTPError(response.status, response.reason, url)
+
                         return await response.text()
                 
                 if self._mode == "dynamic" and self._context:
@@ -38,16 +53,21 @@ class Network:
 
                     try:
                         try:
-                            await playwright_page.goto(url, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT)
+                            response = await playwright_page.goto(url, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT)
                         except PlaywrightTimeout:
-                            print(f"Reached timeout on {url}. Using partial content.")
+                            print(f"Reached timeout on '{url}', proceeding with partial content")
+
+                        if 'response' in locals() and not response.status < 400:
+                            raise HTTPError(response.status, response.status_text, url)
+                        
                         return await playwright_page.content()
                     finally:
                         await playwright_page.close()
-                        
+
+            except HTTPError as e:
+                print(e)
             except (aiohttp.ClientError, PlaywrightError) as e:
-                print(f"Exception '{type(e)}' was raised while accessing {url}: {e}")
-                return None
+                print(f"Exception '{type(e)}' was raised while trying to accessing '{url}': {e}")
 
 
     async def __aenter__(self) -> Self:
