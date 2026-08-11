@@ -1,7 +1,7 @@
 import aiohttp
 import asyncio
 from contextlib import nullcontext
-from typing import Literal
+from typing import Literal, Self
 
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
 
@@ -16,7 +16,7 @@ class Network:
     )
 
 
-    def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> Network:
+    def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> None:
         self._mode = mode
         self._session: aiohttp.ClientSession | None = None
         self._context = None
@@ -50,7 +50,7 @@ class Network:
                 return None
 
 
-    async def __aenter__(self) -> Network:
+    async def __aenter__(self) -> Self:
         if self._mode == "static":
             self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=STATIC_SCRAPE_TIMEOUT / 100))
         elif self._mode == "dynamic":
