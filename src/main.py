@@ -13,7 +13,10 @@ from config import BASE_URL, CONCURRENT_WORKER_THREADS
 async def main():
     site = Site(BASE_URL)
 
-    with ThreadPoolExecutor(max_workers=CONCURRENT_WORKER_THREADS if CONCURRENT_WORKER_THREADS and CONCURRENT_WORKER_THREADS >= 0 else None) as executor:
+    if CONCURRENT_WORKER_THREADS == 0:
+        raise ValueError("Concurrent worker threads is set to 0, must be >1 or -1 for unlimited")
+
+    with ThreadPoolExecutor(max_workers=CONCURRENT_WORKER_THREADS if CONCURRENT_WORKER_THREADS and CONCURRENT_WORKER_THREADS > 0 else None) as executor:
         asyncio.get_running_loop().set_default_executor(executor)
 
         Mapper.map_site(site)
