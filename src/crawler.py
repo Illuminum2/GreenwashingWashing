@@ -1,6 +1,4 @@
-import aiohttp
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
 from playwright.async_api import async_playwright, BrowserContext as PlaywrightBrowserContext, Error as PlaywrightError, TimeoutError as PlaywrightTimeoutError
