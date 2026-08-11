@@ -6,6 +6,8 @@ from config import MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
 
 class Matcher:
+    _xml_prog: re.Pattern
+
     @staticmethod
     def _compile_patterns(patterns: list[str]) -> re.Pattern | None:
         pattern = '|'.join('(%s)' % case for case in patterns) # Merge patterns into one
@@ -13,6 +15,14 @@ class Matcher:
         if pattern != '': # Empty string matches everything
             return re.compile(pattern, re.I | re.U)
         return None
+
+
+    @staticmethod
+    def isXMLUrl(url: str) -> bool:
+        if not hasattr(Matcher, '_xml_prog'):
+            Matcher._xml_prog = re.compile(r"[^?#]+\.xml")
+
+        return bool(re.search(Matcher._xml_prog, url))
 
 
     @staticmethod

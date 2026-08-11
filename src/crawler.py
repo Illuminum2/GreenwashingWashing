@@ -5,6 +5,7 @@ from html_to_markdown import convert, ConversionOptions
 from lxml import etree
 
 from network import Network
+from matcher import Matcher
 
 from sites import Site, Page
 
@@ -18,7 +19,7 @@ class Crawler:
 
 
     @staticmethod
-    def _parse_xml(page: Page) -> None:
+    def _parse_xml_page(page: Page) -> None:
         if page.raw is not None:
             parser = etree.XMLParser(remove_blank_text=True)
             xml = etree.XML(bytes(page.raw, encoding="utf-8"), parser)
@@ -27,7 +28,7 @@ class Crawler:
 
 
     @staticmethod
-    def _parse_html(page: Page) -> None:
+    def _parse_html_page(page: Page) -> None:
         if page.raw is not None:
             result = convert(page.raw, ConversionOptions(output_format="plain", skip_images=True)) # Parse HTML to text
             page.content = result.content
@@ -35,10 +36,17 @@ class Crawler:
     
 
     @staticmethod
+    async def crawl_page(page: Page, network: Network) -> None:
+        await Crawler._fetch_page(page, network)
+
+        if Matcher.isXMLUrl(page.url):
+            await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_xml_page, page)
+        else:
+            await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html_page, page)
+
+
+    @staticmethod
     async def crawl_site(site: Site, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
         async with Network(mode=mode) as network:
-            tasks = [Crawler._fetch_page(page, network) for page in site.pages]
+            tasks = [Crawler.crawl_page(page, network) for page in site.pages]
             await asyncio.gather(*tasks)
-
-        for page in site.pages:
-            asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html, page)
