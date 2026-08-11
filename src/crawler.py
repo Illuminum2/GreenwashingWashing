@@ -19,20 +19,20 @@ class Crawler:
 
 
     @staticmethod
-    def _parse_xml_page(page: Page) -> None:
+    def _parse_xml_page(page: Page) -> list[str] | None:
         if page.raw is not None:
             parser = etree.XMLParser(remove_blank_text=True)
             xml = etree.XML(bytes(page.raw, encoding="utf-8"), parser)
             #links = xml.xpath("//ns:loc/text()", namespaces={"ns": "http://www.sitemaps.org/schemas/sitemap/0.9"})
-            page.links = xml.xpath("//*[local-name() = 'loc']/text()")
+            return xml.xpath("//*[local-name() = 'loc']/text()")
 
 
     @staticmethod
-    def _parse_html_page(page: Page) -> None:
+    def _parse_html_page(page: Page) -> list[str] | None:
         if page.raw is not None:
             result = convert(page.raw, ConversionOptions(output_format="plain", skip_images=True)) # Parse HTML to text
             page.content = result.content
-            page.links = [link.href for link in result.metadata.links]
+            return [link.href for link in result.metadata.links]
     
 
     @staticmethod
