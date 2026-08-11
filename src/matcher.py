@@ -1,12 +1,15 @@
 import re
 
+import tld
+
 from sites import Site, Page
 
-from config import MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
+from config import BASE_URL, MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
 
 class Matcher:
     _xml_prog: re.Pattern
+    _base_url_fld: str
 
     @staticmethod
     def _compile_patterns(patterns: list[str]) -> re.Pattern | None:
@@ -15,6 +18,17 @@ class Matcher:
         if pattern != '': # Empty string matches everything
             return re.compile(pattern, re.I | re.U)
         return None
+
+
+    @staticmethod
+    def isUrlInBase(url: str) -> bool:
+        if not hasattr(Matcher, '_base_url_fld'):
+            try:
+                Matcher._base_url_fld = tld.get_fld(BASE_URL, fix_protocol=True)
+            except tld.exceptions.TldDomainNotFound:
+                raise ValueError("Configured base url does not have a valid TLD")
+
+        return bool(tld.get_fld(url, fix_protocol=True, fail_silently=True) == Matcher._base_url_fld)
 
 
     @staticmethod
