@@ -83,9 +83,9 @@ class Network:
             except HTTPError as e:
                 print(e)
                 raise e
-            except (aiohttp.ClientError, PlaywrightError) as e:
+            except (aiohttp.ClientError, aiohttp.TimeoutError, PlaywrightError) as e:
                 print(f"Exception '{type(e)}' was raised while trying to accessing '{url}': {e}")
-                raise NetworkError(str(e))
+                raise NetworkError(str(e), url)
 
 
     async def __aenter__(self) -> Self:
