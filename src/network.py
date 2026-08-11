@@ -31,11 +31,7 @@ class NetworkError(Exception):
 
 
 class Network:
-    _semaphore: asyncio.Semaphore | None = (
-        asyncio.Semaphore(CONCURRENT_NETWORK_REQUESTS)
-        if CONCURRENT_NETWORK_REQUESTS is not None and CONCURRENT_NETWORK_REQUESTS > 0
-        else None
-    )
+    _semaphore: asyncio.Semaphore | None
 
 
     def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> None:
@@ -83,6 +79,16 @@ class Network:
 
 
     async def __aenter__(self) -> Self:
+        if not '_semaphore' in locals():
+            if CONCURRENT_NETWORK_REQUESTS == 0:
+                raise ValueError("Concurrent network requests is set to 0, must be >1 or -1 for unlimited")
+            
+            self._semaphore = (
+                asyncio.Semaphore(CONCURRENT_NETWORK_REQUESTS)
+                if CONCURRENT_NETWORK_REQUESTS is not None and CONCURRENT_NETWORK_REQUESTS > 0
+                else None
+            )
+
         if self._mode == "static":
             self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=STATIC_SCRAPE_TIMEOUT / 1000))
         elif self._mode == "dynamic":
