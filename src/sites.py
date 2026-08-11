@@ -12,6 +12,7 @@ class Site:
 @dataclass
 class Page:
     url: str
-    html: str = None
+    raw: str = None
     content: str = None
+    links: list[str] = field(default_factory=list)
     matches: list[str] = field(default_factory=list)

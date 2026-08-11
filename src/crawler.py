@@ -1,8 +1,8 @@
 import asyncio
 from typing import Literal
 
-from playwright.async_api import async_playwright, BrowserContext as PlaywrightBrowserContext, Error as PlaywrightError, TimeoutError as PlaywrightTimeoutError
 from html_to_markdown import convert, ConversionOptions
+from lxml import etree
 
 from network import Network
 
@@ -13,21 +13,32 @@ from config import SCRAPING_MODE
 
 class Crawler:
     @staticmethod
-    async def _fetch_page_html(page: Page, network: Network) -> None:
-        page.html = await network.fetch_url(page.url)
+    async def _fetch_page(page: Page, network: Network) -> None:
+        page.raw = await network.fetch_url(page.url)
 
 
     @staticmethod
-    def _parse_html_to_txt(page: Page) -> None:
-        if page.html is not None:
-            page.content = convert(page.html, ConversionOptions(output_format="plain")).content # Parse HTML to text
+    def _parse_xml(page: Page) -> None:
+        if page.raw is not None:
+            parser = etree.XMLParser(remove_blank_text=True)
+            xml = etree.XML(bytes(page.raw, encoding="utf-8"), parser)
+            #links = xml.xpath("//ns:loc/text()", namespaces={"ns": "http://www.sitemaps.org/schemas/sitemap/0.9"})
+            page.links = xml.xpath("//*[local-name() = 'loc']/text()")
 
+
+    @staticmethod
+    def _parse_html(page: Page) -> None:
+        if page.raw is not None:
+            result = convert(page.raw, ConversionOptions(output_format="plain", skip_images=True)) # Parse HTML to text
+            page.content = result.content
+            page.links = [link.href for link in result.metadata.links]
+    
 
     @staticmethod
     async def crawl_site(site: Site, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
         async with Network(mode=mode) as network:
-            tasks = [Crawler._fetch_page_html(page, network) for page in site.pages]
+            tasks = [Crawler._fetch_page(page, network) for page in site.pages]
             await asyncio.gather(*tasks)
 
         for page in site.pages:
-            asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html_to_txt, page)
+            asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html, page)
