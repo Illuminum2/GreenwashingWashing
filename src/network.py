@@ -20,11 +20,20 @@ class HTTPError(Exception):
 
 
 
+class NetworkError(Exception):
+    def __init__(self, text: str, url: str) -> None:
+        super().__init__(text)
+        self.text = text
+
+    def __str__(self) -> str:
+        return self.text
+
+
 
 class Network:
     _semaphore: asyncio.Semaphore | None = (
         asyncio.Semaphore(CONCURRENT_NETWORK_REQUESTS)
-        if CONCURRENT_NETWORK_REQUESTS is not None and CONCURRENT_NETWORK_REQUESTS >= 0
+        if CONCURRENT_NETWORK_REQUESTS is not None and CONCURRENT_NETWORK_REQUESTS > 0
         else None
     )
 
@@ -70,6 +79,7 @@ class Network:
                 raise e
             except (aiohttp.ClientError, PlaywrightError) as e:
                 print(f"Exception '{type(e)}' was raised while trying to accessing '{url}': {e}")
+                raise NetworkError(str(e))
 
 
     async def __aenter__(self) -> Self:
