@@ -19,7 +19,7 @@ async def main():
     with ThreadPoolExecutor(max_workers=CONCURRENT_WORKER_THREADS if CONCURRENT_WORKER_THREADS and CONCURRENT_WORKER_THREADS > 0 else None) as executor:
         asyncio.get_running_loop().set_default_executor(executor)
 
-        Mapper.map_site(site)
+        await Mapper.map_site(site)
         await Crawler.crawl_site(site)
         Matcher.match_site(site)
     

@@ -1,30 +1,38 @@
 import re
 import requests
+from typing import Literal
 
 from bs4 import BeautifulSoup
+
+from network import Network
 
 from sites import Site, Page
 
 
+from config import MAPPING_MODE
+
+
 class Mapper:
     @staticmethod
-    def _crawl_sitemap(sitemap_url: str) -> list[str]:
-        page = requests.get(sitemap_url)
-        xmlSoup = BeautifulSoup(page.content, features="xml")
+    async def _crawl_sitemap(url: str, mode: Literal['static', 'dynamic'] = MAPPING_MODE) -> list[str]:
+        async with Network(mode=mode) as network:
+            content = await network.fetch_url(url)
 
-        url_elements = xmlSoup.find_all('loc') # Extract all link elements from sitemap
-        return [url.text for url in url_elements] # Extract links from all link elements
+            xmlSoup = BeautifulSoup(content, features="xml")
+            url_elements = xmlSoup.find_all('loc') # Extract all link elements from sitemap
+
+            return [url.text for url in url_elements] # Extract links from all link elements
 
 
     @staticmethod
-    def map_site(site: Site, sitemap_path: str = "/sitemap.xml") -> None:
+    async def map_site(site: Site, sitemap_path: str = "/sitemap.xml") -> None:
         sitemap_urls = [site.base_url + sitemap_path]
 
         xml_prog = re.compile(r"[^?]+\.xml") # Pattern for matching XML sitemaps
         
         i = 0
         while i < len(sitemap_urls):
-            res_urls = Mapper._crawl_sitemap(sitemap_urls[i])
+            res_urls = await Mapper._crawl_sitemap(sitemap_urls[i])
 
             for url in res_urls:
                 if not xml_prog.match(url):
