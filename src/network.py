@@ -1,6 +1,6 @@
 import aiohttp
 import asyncio
-from contextlib import nullcontext
+from contextlib import nullcontext, suppress
 from typing import Literal, Self
 
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
@@ -88,10 +88,10 @@ class Network:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         if self._session:
-            await self._session.close()
+            with suppress(Exception): await self._session.close()
         if self._context:
-            await self._context.close()
+            with suppress(Exception): await self._context.close()
         if self._browser:
-            await self._browser.close()
+            with suppress(Exception): await self._browser.close()
         if self._playwright:
-            await self._playwright.stop()
+            with suppress(Exception): await self._playwright.stop()
