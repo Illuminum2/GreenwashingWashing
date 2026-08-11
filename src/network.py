@@ -4,8 +4,9 @@ from contextlib import nullcontext, suppress
 from typing import Literal, Self
 
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
+from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_if_exception, retry_if_exception_type
 
-from config import CONCURRENT_NETWORK_REQUESTS, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT, STATIC_SCRAPE_TIMEOUT
+from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT, STATIC_SCRAPE_TIMEOUT
 
 
 class HTTPError(Exception):
@@ -41,6 +42,15 @@ class Network:
         self._playwright, self._browser = None, None
 
 
+    @retry(
+        wait=wait_exponential_jitter(MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRIES),
+        stop=stop_after_attempt(MAX_NETWORK_RETRIES),
+        retry=(
+            retry_if_exception(lambda e: type(e) is HTTPError and (e.status == 503 or e.status == 504))
+            | retry_if_exception_type(NetworkError)
+        ),
+        reraise=True
+    )
     async def fetch_url(self, url: str) -> str | None:
         # https://stackoverflow.com/a/73556999
         semaphore = self._semaphore if self._semaphore else nullcontext()
