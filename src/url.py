@@ -73,3 +73,8 @@ class Url:
 
     def __str__(self) -> str:
         return self.url
+
+
+    # Check by absolute, ignore query and fragments
+    def __contains__(self, item: Url):
+        return self.absolute == item.absolute
