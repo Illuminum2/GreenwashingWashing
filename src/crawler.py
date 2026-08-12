@@ -20,7 +20,7 @@ class Crawler:
 
     @staticmethod
     def _parse_xml_page(page: Page) -> list[str] | None:
-        if page.raw is not None:
+        if page.raw is not None and page.raw != '': # Empty content throws lxml exception
             parser = etree.XMLParser(remove_blank_text=True)
             xml = etree.XML(bytes(page.raw, encoding="utf-8"), parser)
             page.links = xml.xpath("//*[local-name() = 'loc']/text()")
