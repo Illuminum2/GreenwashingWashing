@@ -6,13 +6,16 @@ from crawler import Crawler
 from matcher import Matcher
 
 from sites import Site, Page
+from url import Url
 
-from config import BASE_URL, CONCURRENT_WORKER_THREADS
+from config import BASE_URL, SITEMAP_PATH, CONCURRENT_WORKER_THREADS
 
 
 async def main():
-    site = Site(BASE_URL)
-    site.add_page(BASE_URL)
+    site = Site(Url(BASE_URL))
+
+    site.add_page(Url(BASE_URL))
+    site.add_page(Url(SITEMAP_PATH, Url(BASE_URL)))
 
     if CONCURRENT_WORKER_THREADS == 0:
         raise ValueError("Concurrent worker threads is set to 0, must be >1 or -1 for unlimited")
