@@ -1,35 +1,35 @@
 from dataclasses import dataclass, field
 from typing import Final
 
+from url import Url
+
 
 @dataclass
 class Site:
-    base_url: Final[str]
+    base_url: Final[Url]
 
-    _pages: dict[str, Page] = field(default_factory=dict)
+    _pages: dict[Url, Page] = field(default_factory=dict)
 
     @property
-    def page_urls(self) -> list[str]:
+    def page_urls(self) -> list[Url]:
         return self._pages.keys()
 
     @property
     def pages(self) -> list[Page]:
         return self._pages.values()
 
-    def add_page(self, url: str) -> Page | None:
-        if url in self.page_urls:
-            return None
-        
-        self._pages[url] = Page(url, self)
-        return self._pages[url]
+    def add_page(self, url: Url) -> Page | None:
+        if url not in self.page_urls:        
+            self._pages[url] = Page(url, self)
+            return self._pages[url]
 
 
 @dataclass
 class Page:
-    url: Final[str]
+    url: Final[Url]
     site: Site
 
     raw: str | None = None
     content: str | None = None
-    links: list[str] = field(default_factory=list)
+    links: list[Url] = field(default_factory=list)
     matches: list[str] = field(default_factory=list)
