@@ -4,7 +4,7 @@ from typing import Literal
 from html_to_markdown import convert, ConversionOptions
 from lxml import etree
 
-from network import Network
+from network import Network, HTTPError, NetworkError
 
 from sites import Site, Page
 from url import Url
@@ -40,7 +40,11 @@ class Crawler:
 
     @staticmethod
     async def crawl_page(page: Page, network: Network) -> list[str] | None:
-        await Crawler._fetch_page(page, network)
+        try:
+            await Crawler._fetch_page(page, network)
+        except (HTTPError, NetworkError) as e:
+            print(e)
+            return None
 
         if page.url.is_XML:
             return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_xml_page, page)
