@@ -65,8 +65,10 @@ class Crawler:
 
     @staticmethod
     async def crawl_site(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
-        async with Network(mode=mode) as network:
-            async with asyncio.TaskGroup() as tg:
-                [tg.create_task(Crawler.crawl_page_recursive(page, out_q, tg, network)) for page in site.pages]
+        try:
+            async with Network(mode=mode) as network:
+                async with asyncio.TaskGroup() as tg:
+                    [tg.create_task(Crawler.crawl_page_recursive(page, out_q, tg, network)) for page in site.pages]
 
-        out_q.shutdown()
+        finally:
+            out_q.shutdown()
