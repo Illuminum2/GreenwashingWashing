@@ -1,4 +1,5 @@
 import re
+from urllib.parse import urlparse, urlsplit, urldefrag
 from yarl import URL
 
 import tld
@@ -11,11 +12,25 @@ class Url:
     _base_url_fld: str
 
 
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, base: str | None = None) -> None:
         self.raw: str = url
         self.url = URL(url)
 
-        print(self.url)
+        if base is not None:
+            self.setBase(base)
+
+
+    def setBase(self, url: str) -> None:
+        base_url= URL(url)
+
+        self.url = URL.build(
+            scheme=base_url.scheme,
+            host=base_url.host,
+            port=base_url.port,
+            path=self.url.path,
+            query=self.url.query,
+            fragment=self.url.fragment
+        )
 
 
     def isInBase(self) -> bool:
