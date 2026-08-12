@@ -62,5 +62,14 @@ class Url:
         return bool(self._url.suffix is None or self._url.suffix == ".xml")
 
 
-    def __str__(self):
-        return self._url.human_repr()
+    @property
+    def absolute(self) -> str:
+        return  self._url.with_query(None).with_fragment(None).human_repr()
+    
+    @property
+    def url(self) -> str:
+        return  self._url.human_repr()
+
+
+    def __str__(self) -> str:
+        return self.url
