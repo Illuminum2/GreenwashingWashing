@@ -5,7 +5,7 @@ SITEMAP_PATH = "/sitemap.xml" # Url path to sitemap
 URL_MODE = "absolute" # 'absolute': remove query and fragment parameters; 'url': keeps them
 
 URL_PATH_EXCLUSION_PATTERNS = [ # Excludes URL paths from getting matched; case-insensitive
-
+    r"^/filestore/.*"
 ]
 
 
@@ -32,15 +32,15 @@ CONCURRENT_WORKER_THREADS = 5 # -1 for unlimited, 0 for no worker threads
 
 
 # Networking:
-CONCURRENT_NETWORK_REQUESTS = 20 # -1 for unlimited, 0 for no network connections
-MAX_NETWORK_RETRIES = 5 # Maximum amount of network retries
-MIN_NETWORK_RETRY_DELAY = 1 # Minimum delay in seconds before retry attempt
-MAX_NETWORK_RETRY_DELAY = 20 # Maximum delay in seconds before retry attempt
+CONCURRENT_NETWORK_REQUESTS = 20 # '-1': unlimited simultaneous network requests
+MAX_NETWORK_RETRIES = 5 # Maximum retry count for a specific page
+MIN_NETWORK_RETRY_DELAY = 1 # Minimum delay in seconds before next retry attempt
+MAX_NETWORK_RETRY_DELAY = 20 # Maximum delay in seconds before next retry attempt
 DEFAULT_NETWORK_MODE = "static" # 'static': use aiohttp (raw network requests); 'dynamic': use playwright (browser instances)
 
 
-# Scraping:
-STATIC_SCRAPE_TIMEOUT_MS = 5000 # Time(ms) until aiohttp timeout
-DYNAMIC_SCRAPE_TIMEOUT_MS = 10000 # Time(ms) until playwright timeout
-
+# Crawling:
 SCRAPING_MODE = "dynamic" # 'static': use aiohttp; 'dynamic': use playwright
+
+STATIC_SCRAPE_TIMEOUT_MS = 5000 # Time in ms until aiohttp(static) timeout
+DYNAMIC_SCRAPE_TIMEOUT_MS = 10000 # Time in ms until playwright(dynamic) timeout

@@ -70,7 +70,6 @@ class Url:
         return self.string
 
 
-    # Check by absolute, ignore query and fragments
     def __eq__(self, other: Url):
         if not isinstance(other, Url):
             return False
