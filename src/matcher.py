@@ -62,6 +62,6 @@ class Matcher:
 
         async with asyncio.TaskGroup() as tg:
             async for page in Pipeline.queue_drain(in_q):
-                tg.create_task(Matcher.match_page(page, out_q, match_prog, match_exclusion_prog))
+                tg.create_task(asyncio.get_running_loop().run_in_executor(None, Matcher.match_page, page, out_q, match_prog, match_exclusion_prog))
 
         out_q.shutdown()
