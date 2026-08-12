@@ -1,9 +1,9 @@
 import asyncio
-from typing import AsyncGenerator, Coroutine, Any
+from typing import AsyncIterator, Coroutine, Any
 
 class Pipeline:
     @staticmethod
-    async def queue_drain(q: asyncio.Queue) -> AsyncGenerator[Coroutine[Any, Any, Any]]:
+    async def queue_drain(q: asyncio.Queue) -> AsyncIterator[Coroutine[Any, Any, Any]]:
         try:
             yield await q.get()
         except asyncio.QueueShutDown:
