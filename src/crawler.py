@@ -56,9 +56,7 @@ class Crawler:
     async def crawl_page_recursive(page: Page, out_q: asyncio.Queue, tg: asyncio.TaskGroup, network: Network) -> None:
         links = await Crawler.crawl_page(page, network)
 
-        for link in links:
-            if (link_page := page.site.add_page(link)):
-                tg.create_task(Crawler.crawl_page_recursive(link_page, out_q, tg, network))
+        if links is not None:
 
         await out_q.put(page)
 
