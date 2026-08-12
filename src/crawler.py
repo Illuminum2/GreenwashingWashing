@@ -57,6 +57,9 @@ class Crawler:
         links = await Crawler.crawl_page(page, network)
 
         if links is not None:
+            for link in links:
+                if (link_page := page.site.add_page(Url(link, page.url))):
+                    tg.create_task(Crawler.crawl_page_recursive(link_page, out_q, tg, network))
 
         await out_q.put(page)
 
