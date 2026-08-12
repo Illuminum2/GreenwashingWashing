@@ -1,19 +1,14 @@
 import asyncio
 import re
 
-import tld
-
 from pipeline import Pipeline
 
 from sites import Page
 
-from config import BASE_URL, MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
+from config import MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
 
 class Matcher:
-    _xml_prog: re.Pattern
-    _base_url_fld: str
-
     @staticmethod
     def _compile_patterns(patterns: list[str]) -> re.Pattern:
         pattern = '|'.join('(?:%s)' % case for case in patterns) # Merge patterns into one
@@ -21,25 +16,6 @@ class Matcher:
         if pattern != '': # Empty string matches everything
             return re.compile(pattern, re.I | re.U)
         return re.compile('?!')
-
-
-    @staticmethod
-    def isUrlInBase(url: str) -> bool:
-        if not hasattr(Matcher, '_base_url_fld'):
-            try:
-                Matcher._base_url_fld = tld.get_fld(BASE_URL, fix_protocol=True)
-            except tld.exceptions.TldDomainNotFound:
-                raise ValueError("Configured base url does not have a valid TLD")
-
-        return bool(tld.get_fld(url, fix_protocol=True, fail_silently=True) == Matcher._base_url_fld)
-
-
-    @staticmethod
-    def isXMLUrl(url: str) -> bool:
-        if not hasattr(Matcher, '_xml_prog'):
-            Matcher._xml_prog = re.compile(r"[^?#]+\.xml")
-
-        return bool(re.search(Matcher._xml_prog, url))
 
 
     @staticmethod
