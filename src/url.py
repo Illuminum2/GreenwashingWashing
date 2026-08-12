@@ -3,7 +3,7 @@ from yarl import URL
 
 import tld
 
-from config import BASE_URL
+from config import URL_MODE
 
 
 class Url:
@@ -71,10 +71,24 @@ class Url:
         return  self._url.human_repr()
 
 
-    def __str__(self) -> str:
+    @property
+    def string(self) -> str:
+        if URL_MODE == "absolute":
+            return self.absolute
         return self.url
 
 
+    def __str__(self) -> str:
+        return self.string
+
+
     # Check by absolute, ignore query and fragments
-    def __contains__(self, item: Url):
-        return self.absolute == item.absolute
+    def __eq__(self, other: Url):
+        if not isinstance(other, Url):
+            return False
+        return self.absolute == other.absolute
+
+
+    def __hash__(self):
+        return hash(self.raw)
+    
