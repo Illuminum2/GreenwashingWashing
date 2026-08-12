@@ -10,11 +10,11 @@ class Site:
 
     @property
     def page_urls(self) -> list[str]:
-        return self._pages.keys
+        return self._pages.keys()
 
     @property
     def pages(self) -> list[Page]:
-        return self._page.values
+        return self._pages.values()
 
     def add_page(self, url: str) -> Page | None:
         if url in self.page_urls:
