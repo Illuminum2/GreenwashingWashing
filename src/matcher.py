@@ -1,6 +1,9 @@
+import asyncio
 import re
 
 import tld
+
+from pipeline import Pipeline
 
 from sites import Site, Page
 
@@ -40,20 +43,25 @@ class Matcher:
 
 
     @staticmethod
-    def _match_page(page: Page, match_prog: re.Pattern, match_exclusion_prog: re.Pattern | None) -> None:
+    async def match_page(page: Page, out_q: asyncio.Queue, match_prog: re.Pattern, match_exclusion_prog: re.Pattern | None) -> None:
         if page.content:
             for word in page.content.split():
                 if match_prog.search(word) and (not match_exclusion_prog.search(word) if match_exclusion_prog is not None else True):
                         page.matches.append(word)
 
+        await out_q.put(page)
+
 
     @staticmethod
-    def match_site(site: Site, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = MATCH_EXCLUSION_PATTERNS) -> None:
+    async def match_site(in_q: asyncio.Queue, out_q: asyncio.Queue, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = MATCH_EXCLUSION_PATTERNS) -> None:
         if not match_patterns:
             raise ValueError('Empty list of match patterns provided')
 
         match_prog = Matcher._compile_patterns(match_patterns)
         match_exclusion_prog = Matcher._compile_patterns(anti_match_patterns)
 
-        for page in site.pages:
-            Matcher._match_page(page, match_prog, match_exclusion_prog)
+        async with asyncio.TaskGroup() as tg:
+            async for page in Pipeline.queue_drain(in_q):
+                tg.create_task(Matcher.match_page(page, out_q, match_prog, match_exclusion_prog))
+
+        out_q.shutdown()
