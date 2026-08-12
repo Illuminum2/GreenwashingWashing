@@ -6,7 +6,7 @@ from typing import Literal, Self
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_if_exception, retry_if_exception_type
 
-from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT, STATIC_SCRAPE_TIMEOUT
+from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT_MS, STATIC_SCRAPE_TIMEOUT_MS
 
 
 class HTTPError(Exception):
@@ -43,7 +43,7 @@ class Network:
 
 
     @retry(
-        wait=wait_exponential_jitter(MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRIES),
+        wait=wait_exponential_jitter(MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY),
         stop=stop_after_attempt(MAX_NETWORK_RETRIES),
         retry=(
             retry_if_exception(lambda e: type(e) is HTTPError and (e.status == 503 or e.status == 504))
@@ -69,7 +69,7 @@ class Network:
 
                     try:
                         try:
-                            response = await playwright_page.goto(url, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT)
+                            response = await playwright_page.goto(url.string, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
                         except PlaywrightTimeout:
                             print(f"Reached timeout on '{url}', proceeding with partial content")
 
