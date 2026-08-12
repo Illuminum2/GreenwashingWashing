@@ -19,7 +19,7 @@ class Site:
         return self._pages.values()
 
     def add_page(self, url: Url) -> Page | None:
-        if url not in self.page_urls:        
+        if (url.is_in_base(self.base_url)) and (url not in self.page_urls):
             self._pages[url] = Page(url, self)
             return self._pages[url]
 
