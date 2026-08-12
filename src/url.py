@@ -21,7 +21,7 @@ class Url:
 
 
     def _update_vars(self, url: URL):
-        host: tld.Result = tld.get_tld(url.host, as_object=True, fix_protocol=True, fail_silently=True)
+        host: tld.Result | None = tld.get_tld(url.host, as_object=True, fix_protocol=True, fail_silently=True) if url.host else None
 
         self.subdomain = host.subdomain if host is not None else None
         self.domain = host.domain if host is not None else None
