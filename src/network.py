@@ -6,11 +6,13 @@ from typing import Literal, Self
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_if_exception, retry_if_exception_type
 
+from url import Url
+
 from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT_MS, STATIC_SCRAPE_TIMEOUT_MS
 
 
 class HTTPError(Exception):
-    def __init__(self, status: int, reason: str, url: str) -> None:
+    def __init__(self, status: int, reason: str, url: Url) -> None:
         super().__init__(reason)
         self.status = status
         self.reason = reason
@@ -22,9 +24,10 @@ class HTTPError(Exception):
 
 
 class NetworkError(Exception):
-    def __init__(self, text: str, url: str) -> None:
+    def __init__(self, text: str, url: Url) -> None:
         super().__init__(text)
         self.text = text
+        self.url = url
 
     def __str__(self) -> str:
         return self.text
@@ -51,14 +54,14 @@ class Network:
         ),
         reraise=True
     )
-    async def fetch_url(self, url: str) -> str | None:
+    async def fetch_url(self, url: Url) -> str | None:
         # https://stackoverflow.com/a/73556999
         semaphore = self._semaphore if self._semaphore else nullcontext()
 
         async with semaphore:
             try:
                 if self._mode == "static" and self._session:
-                    async with self._session.get(url) as response:
+                    async with self._session.get(url.string) as response:
                         if not response.ok:
                             raise HTTPError(response.status, response.reason, url)
 
@@ -71,7 +74,7 @@ class Network:
                         try:
                             response = await playwright_page.goto(url.string, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
                         except PlaywrightTimeout:
-                            print(f"Reached timeout on '{url}', proceeding with partial content")
+                            print(f"Reached timeout on '{Url}', proceeding with partial content")
 
                         if 'response' in locals() and not response.status < 400:
                             raise HTTPError(response.status, response.status_text, url)
@@ -100,7 +103,7 @@ class Network:
             )
 
         if self._mode == "static":
-            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=STATIC_SCRAPE_TIMEOUT / 1000))
+            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=STATIC_SCRAPE_TIMEOUT_MS / 1000))
         elif self._mode == "dynamic":
             self._playwright = await async_playwright().start()
             self._browser = await self._playwright.chromium.launch()
