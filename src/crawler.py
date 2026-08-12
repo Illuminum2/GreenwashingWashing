@@ -49,12 +49,12 @@ class Crawler:
 
 
     @staticmethod
-    async def crawl_page_recursive(page: Page, network: Network, tg: asyncio.TaskGroup, out_q: asyncio.Queue) -> None:
+    async def crawl_page_recursive(page: Page, out_q: asyncio.Queue, tg: asyncio.TaskGroup, network: Network) -> None:
         links = await Crawler.crawl_page(page, network)
 
         for link in links:
             if (link_page := page.site.add_page(link)):
-                tg.create_task(Crawler.crawl_page_recursive(link_page, network, tg, out_q))
+                tg.create_task(Crawler.crawl_page_recursive(link_page, out_q, tg, network))
 
         await out_q.put(page)
 
@@ -63,6 +63,6 @@ class Crawler:
     async def crawl_site(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
         async with Network(mode=mode) as network:
             async with asyncio.TaskGroup() as tg:
-                [tg.create_task(Crawler.crawl_page_recursive(page, network, tg, out_q)) for page in site.pages]
+                [tg.create_task(Crawler.crawl_page_recursive(page, out_q, tg, network)) for page in site.pages]
 
         await out_q.shutdown()
