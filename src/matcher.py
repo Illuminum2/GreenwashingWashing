@@ -16,7 +16,7 @@ class Matcher:
 
     @staticmethod
     def _compile_patterns(patterns: list[str]) -> re.Pattern | None:
-        pattern = '|'.join('(%s)' % case for case in patterns) # Merge patterns into one
+        pattern = '|'.join('(?:%s)' % case for case in patterns) # Merge patterns into one
 
         if pattern != '': # Empty string matches everything
             return re.compile(pattern, re.I | re.U)
