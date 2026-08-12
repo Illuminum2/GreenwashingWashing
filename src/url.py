@@ -74,7 +74,7 @@ class Url:
     def __eq__(self, other: Url):
         if not isinstance(other, Url):
             return False
-        return self.absolute == other.absolute
+        return self.string == other.string
 
 
     def __hash__(self):
