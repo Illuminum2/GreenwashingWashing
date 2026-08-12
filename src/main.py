@@ -25,11 +25,11 @@ async def main():
 
         async with asyncio.TaskGroup() as tg:
             tg.create_task(Crawler.crawl_site(site, match_q))
-            tg.create_task(Matcher.match_site(match_q, print_q))
-            tg.create_task(print_site(print_q))
+            tg.create_task(Matcher.match_queue(match_q, print_q))
+            tg.create_task(print_queue(print_q))
 
 
-async def print_site(in_q: asyncio.Queue) -> None:
+async def print_queue(in_q: asyncio.Queue) -> None:
     async with asyncio.TaskGroup() as tg:
         async for page in Pipeline.queue_drain(in_q):
             tg.create_task(print_page(page))

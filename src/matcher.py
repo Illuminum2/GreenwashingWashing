@@ -5,7 +5,7 @@ import tld
 
 from pipeline import Pipeline
 
-from sites import Site, Page
+from sites import Page
 
 from config import BASE_URL, MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
@@ -53,7 +53,7 @@ class Matcher:
 
 
     @staticmethod
-    async def match_site(in_q: asyncio.Queue, out_q: asyncio.Queue, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = MATCH_EXCLUSION_PATTERNS) -> None:
+    async def match_queue(in_q: asyncio.Queue, out_q: asyncio.Queue, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = MATCH_EXCLUSION_PATTERNS) -> None:
         if not match_patterns:
             raise ValueError('Empty list of match patterns provided')
 
