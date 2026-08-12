@@ -15,12 +15,12 @@ class Matcher:
     _base_url_fld: str
 
     @staticmethod
-    def _compile_patterns(patterns: list[str]) -> re.Pattern | None:
+    def _compile_patterns(patterns: list[str]) -> re.Pattern:
         pattern = '|'.join('(?:%s)' % case for case in patterns) # Merge patterns into one
 
         if pattern != '': # Empty string matches everything
             return re.compile(pattern, re.I | re.U)
-        return None
+        return re.compile('?!')
 
 
     @staticmethod
@@ -53,7 +53,7 @@ class Matcher:
         matches = []
 
         for word in content.split():
-            if match_prog.search(word) and (not match_exclusion_prog.search(word) if match_exclusion_prog is not None else True):
+            if match_prog.search(word) and not match_exclusion_prog.search(word):
                 matches.append(word)
 
         return matches
