@@ -5,9 +5,9 @@ from html_to_markdown import convert, ConversionOptions
 from lxml import etree
 
 from network import Network
-from matcher import Matcher
 
 from sites import Site, Page
+from url import Url
 
 from config import SCRAPING_MODE
 
@@ -42,7 +42,7 @@ class Crawler:
     async def crawl_page(page: Page, network: Network) -> list[str] | None:
         await Crawler._fetch_page(page, network)
 
-        if Matcher.isXMLUrl(page.url):
+        if page.url.is_XML:
             return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_xml_page, page)
         
         return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html_page, page)
