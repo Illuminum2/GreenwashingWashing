@@ -7,14 +7,11 @@ from config import URL_MODE
 
 
 class Url:
-    _base_url_fld: str | None = None
-
-
-    def __init__(self, url: str, base: str | None = None, absolute: bool = False) -> None:
+    def __init__(self, url: str, base: Url | None = None, absolute: bool = URL_MODE) -> None:
         self.raw: str = url
         self._url = URL(url)
 
-        if base is not None:
+        if base is not None and not self._url.host:
             self.set_base(base)
 
         if absolute:
@@ -39,22 +36,13 @@ class Url:
         self.fragment = url.fragment
 
 
-    def set_base(self, base_url: str) -> None:
-        url= URL(base_url)
-
-        self._url = url.join(self._url)
+    def set_base(self, base_url: Url) -> None:
+        self._url = base_url._url.join(self._url)
         self._update_vars(self._url)
 
 
-    @property
-    def is_in_base(self) -> bool:
-        if self._base_url_fld is None:
-            try:
-                self._base_url_fld = tld.get_fld(BASE_URL, fix_protocol=True)
-            except tld.exceptions.TldDomainNotFound:
-                raise ValueError("Configured base url does not have a valid TLD")
-
-        return bool(self.fld == self._base_url_fld)
+    def is_in_base(self, base_url: Url) -> bool:
+        return bool(self.fld == base_url.fld)
 
 
     @property
