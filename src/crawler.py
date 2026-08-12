@@ -65,4 +65,4 @@ class Crawler:
             async with asyncio.TaskGroup() as tg:
                 [tg.create_task(Crawler.crawl_page_recursive(page, out_q, tg, network)) for page in site.pages]
 
-        await out_q.shutdown()
+        out_q.shutdown()
