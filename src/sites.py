@@ -21,7 +21,7 @@ class Site:
         return self._pages.values()
 
     def add_page(self, url: Url, depth: int = 0) -> Page | None:
-        if (url.is_in_base(self.base_url)) and (url not in self.page_urls) and (depth <= MAX_CRAWL_DEPTH):
+        if (url.is_valid(self.base_url)) and (url not in self.page_urls) and (depth <= MAX_CRAWL_DEPTH):
             self._pages[url] = Page(url, self, depth)
             return self._pages[url]
 

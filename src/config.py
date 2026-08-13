@@ -4,6 +4,8 @@ SITEMAP_PATH = "/sitemap.xml" # Url path to sitemap
 
 URL_MODE = "absolute" # 'absolute': remove query and fragment parameters; 'url': keeps them
 
+URL_ALLOWED_SUFFIXES = ["", ".php", ".htm", ".html"] # Specify url path suffixes that are allowed to be scraped, '': URLs missing a suffix RECOMMENDATION: do not change these (use path exclusion instead)
+
 URL_PATH_EXCLUSION_PATTERNS = [ # Excludes URL paths from getting matched; case-insensitive
     r"^/filestore/.*"
 ]

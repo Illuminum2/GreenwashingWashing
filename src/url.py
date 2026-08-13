@@ -2,10 +2,14 @@ from yarl import URL
 
 import tld
 
-from config import URL_MODE
+from patterns import Patterns
+
+from config import URL_MODE, URL_ALLOWED_SUFFIXES, URL_PATH_EXCLUSION_PATTERNS
 
 
 class Url:
+    _path_exclusion_prog = Patterns.compile_patterns_iu(URL_PATH_EXCLUSION_PATTERNS)
+
     def __init__(self, url: str, base: Url | None = None, absolute: bool = URL_MODE == "absolute") -> None:
         self.raw: str = url
         self._url = URL(url)
@@ -48,6 +52,14 @@ class Url:
     @property
     def is_XML(self) -> bool:
         return self.suffix == ".xml"
+
+
+    def is_valid(self, base_url: Url) -> bool:
+        return (
+            (self.is_in_base(base_url)) # Check if URL is in base url
+            and (self.suffix in URL_ALLOWED_SUFFIXES or self.is_XML) # Check file type
+            and (not self._path_exclusion_prog.search(self.path)) # Exclude excluded paths
+        )
 
 
     @property
