@@ -55,3 +55,8 @@ MAX_CRAWL_DEPTH = 10
 # Output:
 PRINT_MODE = "csv"
 CSV_PATH = "./output.csv"
+
+
+# Caching:
+CACHE_PATH = "./cache/" # Directory of the cache
+CACHE_EXPIRY_S = 600 # Seconds until a cached value expires; 'None': keep it forever, '0': disable caching

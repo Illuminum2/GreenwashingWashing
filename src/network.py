@@ -7,6 +7,7 @@ from typing import Literal, Self
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_if_exception, retry_if_exception_type
 
+from cache import Cache
 from url import Url
 
 from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT_MS, STATIC_SCRAPE_TIMEOUT_MS
@@ -40,7 +41,7 @@ class Network(ABC):
 
 
     def __init__(self) -> None:
-        pass
+        self._cache = Cache(type(self).__name__) # Get class name of instance to separate caching by mode
 
 
     def get(mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> Network:
@@ -64,12 +65,18 @@ class Network(ABC):
         reraise=True
     )
     async def fetch_url(self, url: Url) -> str:
+        if (cached := await self._cache.retreive(url.string)) is not None:
+            return cached
+
         # https://stackoverflow.com/a/73556999
         semaphore = self._semaphore if self._semaphore else nullcontext()
 
         async with semaphore:
             try:
-                return await self._fetch_url(url)
+                result = await self._fetch_url(url)
+                await self._cache.store(url.string, result)
+
+                return result
 
             except HTTPError as e:
                 print(e)
@@ -100,6 +107,8 @@ class Network(ABC):
 
 class StaticNetwork(Network):
     def __init__(self) -> None:
+        super().__init__()
+
         self._session: aiohttp.ClientSession | None = None
 
 
@@ -128,6 +137,8 @@ class StaticNetwork(Network):
 
 class DynamicNetwork(Network):
     def __init__(self) -> None:
+        super().__init__()
+
         self._context = None
         self._browser = None
         self._playwright = None
