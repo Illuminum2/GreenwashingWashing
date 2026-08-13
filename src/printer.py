@@ -11,16 +11,24 @@ from config import PRINT_MODE, CSV_PATH
 
 
 class Printer(ABC):
+    @staticmethod
+    def get(mode: Literal['console', 'csv'] = PRINT_MODE) -> Printer:
+        if mode == "csv":
+            return CsvPrinter()
+        return ConsolePrinter()
+
+
     @abstractmethod
     async def print_page(self, page: Page) -> None:
         pass
 
 
-    async def run(self, in_q: asyncio.Queue) -> None:
-        async with asyncio.TaskGroup() as tg:
-            async with self:
+    @staticmethod
+    async def run(in_q: asyncio.Queue, mode: Literal['console', 'csv'] = PRINT_MODE) -> None:
+        async with Printer.get(mode) as printer:
+            async with asyncio.TaskGroup() as tg:
                 async for page in Pipeline.queue_drain(in_q):
-                    tg.create_task(self.print_page(page))
+                    tg.create_task(printer.print_page(page))
 
 
     async def __aenter__(self) -> Self:
@@ -62,10 +70,3 @@ class CsvPrinter(Printer):
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         self._file.close()
-
-
-
-def get_printer(mode: Literal['console', 'csv'] = PRINT_MODE) -> Printer:
-    if mode == "csv":
-        return CsvPrinter()
-    return ConsolePrinter()

@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from crawler import Crawler
 from matcher import Matcher
-from printer import get_printer
+from printer import Printer
 
 from sites import Site
 from url import Url
@@ -29,7 +29,7 @@ async def main():
         async with asyncio.TaskGroup() as tg:
             tg.create_task(Crawler.run(site, match_q))
             tg.create_task(Matcher.run(match_q, print_q))
-            tg.create_task(get_printer().run(print_q))
+            tg.create_task(Printer.run(print_q))
 
 
 if __name__ == '__main__':
