@@ -32,6 +32,7 @@ class Url:
         self.host = url.host
         self.port = url.port
         self.path = url.path
+        self.suffix = url.suffix
         self.query = url.query
         self.fragment = url.fragment
 
@@ -47,7 +48,7 @@ class Url:
 
     @property
     def is_XML(self) -> bool:
-        return bool(self._url.suffix is None or self._url.suffix == ".xml")
+        return self.suffix == ".xml"
 
 
     @property
