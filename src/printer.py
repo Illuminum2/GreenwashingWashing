@@ -56,7 +56,7 @@ class CsvPrinter(Printer):
 
 
     async def print_page(self, page: Page) -> None:
-        if page.matches or page.error:
+        if page.matches or page.error and not page.url.is_XML:
             self._writer.writerow([page.url, ", ".join(page.matches), page.error])
 
 
