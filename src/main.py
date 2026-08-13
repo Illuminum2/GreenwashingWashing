@@ -8,19 +8,23 @@ from modules.printer import Printer
 from data.sites import Site
 from network.url import Url
 
-from config import BASE_URL, SITEMAP_PATH, CONCURRENT_WORKER_THREADS
+from utils.config import Config
 
 
 async def main():
-    site = Site(Url(BASE_URL))
+    if not Config.has("general.base_url"):
+        raise ValueError("Base url is not set")
+    site = Site(Url(Config.get("general.base_url")))
 
-    site.add_page(Url(BASE_URL))
-    site.add_page(Url(SITEMAP_PATH, Url(BASE_URL)))
+    site.add_page(Url(Config.get("general.base_url")))
+    if Config.has("general.sitemap_path"):
+        site.add_page(Url(Config.get("general.sitemap_path"), Url(Config.get("general.base_url"))))
 
-    if CONCURRENT_WORKER_THREADS == 0:
+    if Config.get("multithreading.concurrent_threads", 10) == 0:
         raise ValueError("Concurrent worker threads is set to 0, must be >1 or -1 for unlimited")
 
-    with ThreadPoolExecutor(max_workers=CONCURRENT_WORKER_THREADS if CONCURRENT_WORKER_THREADS and CONCURRENT_WORKER_THREADS > 0 else None) as executor:
+    max_workers = Config.get("multithreading.concurrent_threads")
+    with ThreadPoolExecutor(max_workers=(max_workers if max_workers > 0 else None)) as executor:
         asyncio.get_running_loop().set_default_executor(executor)
 
         match_q = asyncio.Queue()

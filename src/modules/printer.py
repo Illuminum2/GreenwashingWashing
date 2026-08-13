@@ -7,12 +7,12 @@ from utils.pipeline import Pipeline
 
 from data.sites import Page
 
-from config import PRINT_MODE, CSV_PATH
+from utils.config import Config
 
 
 class Printer(ABC):
     @staticmethod
-    def get(mode: Literal['console', 'csv'] = PRINT_MODE) -> Printer:
+    def get(mode: Literal['console', 'csv'] = Config.get("print.mode", "console")) -> Printer:
         if mode == "csv":
             return CsvPrinter()
         return ConsolePrinter()
@@ -24,7 +24,7 @@ class Printer(ABC):
 
 
     @staticmethod
-    async def run(in_q: asyncio.Queue, mode: Literal['console', 'csv'] = PRINT_MODE) -> None:
+    async def run(in_q: asyncio.Queue, mode: Literal['console', 'csv'] = Config.get("print.mode", "console")) -> None:
         async with Printer.get(mode) as printer:
             async with asyncio.TaskGroup() as tg:
                 async for page in Pipeline.queue_drain(in_q):
@@ -49,7 +49,9 @@ class ConsolePrinter(Printer):
 
 
 class CsvPrinter(Printer):
-    def __init__(self, path: str = CSV_PATH) -> None:
+    def __init__(self, path: str = Config.get("print.csv_path")) -> None:
+        if not path:
+            ValueError("Empty CSV path provided")
         self._path = path
         self._file = None
         self._writer = None

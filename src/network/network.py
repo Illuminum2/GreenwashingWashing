@@ -10,7 +10,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_i
 from utils.cache import Cache
 from network.url import Url
 
-from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT_MS, STATIC_SCRAPE_TIMEOUT_MS, PLAYWRIGHT_LOADED_EVENT
+from utils.config import Config
 
 
 class HTTPError(Exception):
@@ -44,7 +44,7 @@ class Network(ABC):
         self._cache = Cache(type(self).__name__) # Get class name of instance to separate caching by mode
 
 
-    def get(mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> Network:
+    def get(mode: Literal['static', 'dynamic'] = Config.get("network.default_mode", "static")) -> Network:
         if mode == "dynamic":
             return DynamicNetwork()
         return StaticNetwork()
@@ -56,8 +56,8 @@ class Network(ABC):
 
 
     @retry(
-        wait=wait_exponential_jitter(MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY),
-        stop=stop_after_attempt(MAX_NETWORK_RETRIES),
+        wait=wait_exponential_jitter(Config.get("network.min_retry_delay", 1), Config.get("network.max_retry_delay", 20)),
+        stop=stop_after_attempt(Config.get("network.max_retries", 5)),
         retry=(
             retry_if_exception(lambda e: type(e) is HTTPError and (e.status == 503 or e.status == 504))
             | retry_if_exception_type(NetworkError)
@@ -87,13 +87,14 @@ class Network(ABC):
 
 
     async def __aenter__(self) -> Self:
-        if self._semaphore is None and CONCURRENT_NETWORK_REQUESTS is not None:
-            if CONCURRENT_NETWORK_REQUESTS == 0:
+        if self._semaphore is None and Config.has("network.concurrent_requests"):
+            concurrent_requests = Config.get("network.concurrent_requests", 10)
+            if concurrent_requests == 0:
                 raise ValueError("Concurrent network requests is set to 0, must be >1 or -1 for unlimited")
             
             self._semaphore = (
-                asyncio.Semaphore(CONCURRENT_NETWORK_REQUESTS)
-                if CONCURRENT_NETWORK_REQUESTS >= 1
+                asyncio.Semaphore(concurrent_requests)
+                if concurrent_requests >= 1
                 else None
             )
 
@@ -121,7 +122,7 @@ class StaticNetwork(Network):
 
 
     async def __aenter__(self) -> Self:
-        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=(STATIC_SCRAPE_TIMEOUT_MS / 1000)))
+        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=(Config.get("network.static_timeout_ms", 5000) / 1000)))
 
         await super().__aenter__()
 
@@ -151,7 +152,8 @@ class DynamicNetwork(Network):
             response = None
 
             try:
-                response = await playwright_page.goto(url.string, wait_until="load" if PLAYWRIGHT_LOADED_EVENT != "networkidle" else PLAYWRIGHT_LOADED_EVENT, timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
+                loaded_event = Config.get("network.playwright_loaded_event", "load")
+                response = await playwright_page.goto(url.string, wait_until="load" if loaded_event != "networkidle" else loaded_event, timeout=Config.get("network.dynamic_timeout_ms", 10000))
             except PlaywrightTimeout:
                 print(f"Reached timeout on '{url}', proceeding with partial content")
 

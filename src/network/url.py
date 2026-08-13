@@ -4,13 +4,13 @@ import tld
 
 from utils.patterns import Patterns
 
-from config import BASE_URL, URL_MODE, URL_ALLOWED_SUFFIXES, URL_PATH_EXCLUSION_PATTERNS
+from utils.config import Config
 
 
 class Url:
-    _path_exclusion_prog = Patterns.compile_patterns_iu(URL_PATH_EXCLUSION_PATTERNS)
+    _path_exclusion_prog = Patterns.compile_patterns_iu(Config.get("general.url_path_exclusion_patterns"))
 
-    def __init__(self, url: str, base: Url | None = None, absolute: bool = URL_MODE == "absolute") -> None:
+    def __init__(self, url: str, base: Url | None = None, absolute: bool = Config.get("general.url_mode", "absolute") == "absolute") -> None:
         self.raw: str = url
         self._url = URL(url)
 
@@ -45,7 +45,7 @@ class Url:
         self._update_vars(self._url)
 
 
-    def is_in_base(self, base_url: Url | str | None = BASE_URL) -> bool:
+    def is_in_base(self, base_url: Url | str | None = Config.get("general.base_url")) -> bool:
         if base_url is None:
             return not bool(self.host) # Check if site is relative
 
@@ -60,10 +60,10 @@ class Url:
         return self.suffix == ".xml"
 
 
-    def is_valid(self, base_url: Url | str | None = BASE_URL) -> bool:
+    def is_valid(self, base_url: Url | str | None = Config.get("general.base_url")) -> bool:
         return (
             (self.is_in_base(base_url)) # Check if URL is in base url
-            and (self.suffix in URL_ALLOWED_SUFFIXES or self.is_XML) # Check file type
+            and (self.suffix in Config.get("general.url_allowed_suffixes", ["", ".php", ".htm", ".html"]) or self.is_XML) # Check file type
             and (not self._path_exclusion_prog.search(self.path)) # Exclude excluded paths
         )
 
@@ -79,7 +79,7 @@ class Url:
 
     @property
     def string(self) -> str:
-        if URL_MODE == "absolute":
+        if Config.get("general.url_mode", "absolute") == "absolute":
             return self.absolute
         return self.url
 

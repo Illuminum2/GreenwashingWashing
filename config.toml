@@ -1,0 +1,97 @@
+[general]
+base_url = "https://books.toscrape.com/" # Base website url; must include schema (https/http) and full host
+sitemap_path = "/sitemap.xml" # Url path to sitemap
+
+url_mode = "absolute" # 'absolute': remove query and fragment parameters; 'url': keeps them
+
+url_allowed_suffixes = ["", ".php", ".htm", ".html"] # Specify url path suffixes that are allowed to be scraped, '': URLs missing a suffix RECOMMENDATION: do not change these (use path exclusion instead)
+
+url_path_exclusion_patterns = [ # Excludes URL paths from getting matched; case-insensitive
+    "^/filestore/.*",
+]
+
+
+[match]
+#STRIP_NON_LETTERS = True # Replace every letter of a word that is not part of the unicode letter category or a '-' before matching
+letter_strip_pattern = "(?!-)[[\\W\\d_]" # Pattern for parts of a word that get stripped before matching; default is every non-letter except '-'
+
+patterns = [ # Patterns that words must match; case-insensitive unless pattern wrapped in '(?-i:...)'
+    # German:
+    "öko",
+    "bio",
+    "umwe",
+    "achhal",
+    "neuerb",
+    "emission",
+    "eut",
+    "ergi",
+    "strom",
+    # English:
+    "green",
+    "ecolog",
+    "eco-",
+    "sustainab",
+    "renewab",
+    "environment",
+    "carbon",
+    "footprint",
+    "offset",
+    "recycl",
+    "organic",
+    "biodegrad",
+    "energ",
+    "(?-i:CO)", # Case-sensitive
+    # Dutch:
+    "groen",
+    "duurza",
+    "milieu",
+    "hernieuwb",
+    "uitstoot",
+    "klima",
+    "circulair",
+    "stroom",
+]
+
+exclusion_patterns = [ # Pattern that words must not match; Case-insensitive
+    "umweg",
+    "groente",
+    "energie",
+    "energy",
+    "^strom$",
+    "^stroom$",
+    "^stromed$",
+]
+
+
+[multithreading]
+concurrent_threads = 5 # -1 for unlimited, 0 for no worker threads
+
+
+[network]
+default_mode = "static" # 'static': use aiohttp (raw network requests); 'dynamic': use playwright (browser instances)
+concurrent_requests = 10 # '-1': unlimited simultaneous network requests
+
+max_retries = 5 # Maximum retry count for a specific page
+min_retry_delay = 1 # Minimum delay in seconds before next retry attempt
+max_retry_delay = 20 # Maximum delay in seconds before next retry attempt
+
+
+[crawl]
+mode = "static" # 'static': use aiohttp (raw network requests); 'dynamic': use playwright (browser instances)
+max_recursion_depth = 10 # Limit on how many steps can be taken from the site root/sitemap
+
+static_timeout_ms = 5000 # Time in ms until aiohttp(static) timeout
+dynamic_timeout_ms = 10000 # Time in ms until playwright(dynamic) timeout
+
+playwright_loaded_event = "load" # 'load': Extract DOM when JS load event is triggered; 'networkidle': Extract DOM when network connections are idle for >500ms 
+
+
+[print]
+mode = "csv" # 'console': print in terminal; 'csv': print to csv file
+
+csv_path = "./output.csv" # CSV output file path
+
+
+[cache]
+path = "./cache/" # Directory of the cache
+expiry_s = 3600 # Seconds until a cached value expires; 'None': keep it forever, '0': disable caching

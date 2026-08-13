@@ -6,18 +6,18 @@ from utils.pipeline import Pipeline
 from data.sites import Page
 from utils.patterns import Patterns
 
-from config import LETTER_STRIP_PATTERN, MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
+from utils.config import Config
 
 
 class Matcher:
-    _match_prog = Patterns.compile_patterns_iu(MATCH_PATTERNS)
-    _match_exclusion_prog = Patterns.compile_patterns_iu(MATCH_EXCLUSION_PATTERNS)
-    _letter_strip_prog = Patterns.compile(LETTER_STRIP_PATTERN, re.U)
+    _match_prog = Patterns.compile_patterns_iu(Config.get("match.patterns"))
+    _match_exclusion_prog = Patterns.compile_patterns_iu(Config.get("match.exclusion_patterns"))
+    _letter_strip_prog = Patterns.compile(Config.get("match.letter_strip_pattern", r"(?!-)[\W\d_]"), re.U)
 
     @staticmethod
     def match_content(content: str) -> list[str]:
-        if not MATCH_PATTERNS:
-            raise ValueError('Empty list of match patterns provided')
+        if not Config.get("match.patterns"):
+            raise ValueError('Empty match patterns list provided')
 
         matches = []
 

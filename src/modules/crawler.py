@@ -9,7 +9,7 @@ from network.network import Network, HTTPError, NetworkError
 from data.sites import Site, Page
 from network.url import Url
 
-from config import SCRAPING_MODE
+from utils.config import Config
 
 
 class Crawler:
@@ -67,7 +67,7 @@ class Crawler:
 
 
     @staticmethod
-    async def run(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
+    async def run(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = Config.get("crawl.mode", "static")) -> None:
         try:
             async with Network.get(mode=mode) as network:
                 async with asyncio.TaskGroup() as tg:
