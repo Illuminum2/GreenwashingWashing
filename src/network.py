@@ -92,6 +92,8 @@ class Network:
                 print(f"Exception '{type(e)}' was raised while trying to accessing '{url}': {e}")
                 raise NetworkError(str(e), url)
 
+            raise RuntimeError(f"Network in mode '{self._mode}' is not initialized, use 'async with Network()'")
+
 
     async def __aenter__(self) -> Self:
         if not '_semaphore' in locals():
