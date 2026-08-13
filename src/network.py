@@ -35,7 +35,7 @@ class NetworkError(Exception):
 
 
 class Network:
-    _semaphore: asyncio.Semaphore | None
+    _semaphore: asyncio.Semaphore | None = None
 
 
     def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> None:
@@ -96,13 +96,13 @@ class Network:
 
 
     async def __aenter__(self) -> Self:
-        if not '_semaphore' in locals():
+        if self._semaphore is None and CONCURRENT_NETWORK_REQUESTS is not None:
             if CONCURRENT_NETWORK_REQUESTS == 0:
                 raise ValueError("Concurrent network requests is set to 0, must be >1 or -1 for unlimited")
             
             self._semaphore = (
                 asyncio.Semaphore(CONCURRENT_NETWORK_REQUESTS)
-                if CONCURRENT_NETWORK_REQUESTS is not None and CONCURRENT_NETWORK_REQUESTS > 0
+                if CONCURRENT_NETWORK_REQUESTS >= 1
                 else None
             )
 
