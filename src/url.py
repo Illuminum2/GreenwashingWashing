@@ -7,7 +7,7 @@ from config import URL_MODE
 
 
 class Url:
-    def __init__(self, url: str, base: Url | None = None, absolute: bool = URL_MODE) -> None:
+    def __init__(self, url: str, base: Url | None = None, absolute: bool = URL_MODE == "absolute") -> None:
         self.raw: str = url
         self._url = URL(url)
 
