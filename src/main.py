@@ -6,6 +6,7 @@ from modules.crawler import Crawler
 from modules.matcher import Matcher
 from modules.printer import Printer
 
+from utils.cache import Cache
 from data.sites import Site
 from network.url import Url
 
@@ -17,6 +18,7 @@ parser = argparse.ArgumentParser(description="A script crawling a website to rep
 parser.add_argument("url", type=str, help="Base website url, must include schema (https/http) and full host")
 parser.add_argument("-s", "--static", action="store_true", help="Use aiohttp requests (raw network requests) for scraping")
 parser.add_argument("-d", "--dynamic", action="store_true", help="Use playwright (chromium instance) for scraping")
+parser.add_argument("-c", "--cache-skip", action="store_true", help="Skip cache and always make new network request")
 
 args = parser.parse_args()
 
@@ -28,8 +30,11 @@ async def main():
 
     mode = Config.get("crawl.default_mode", passed=("dynamic" if args.dynamic else ("static" if args.static else None)))
 
+    if args.cache_skip:
+        Cache.disable()
 
-    print(f"Scraping site '{base_url}' with mode '{mode}':")
+
+    print(f"Scraping site '{base_url}' with mode '{mode}'{' (cache skipped)' if args.cache_skip else None}:\n")
 
 
     site = Site(base_url)
