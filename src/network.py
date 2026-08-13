@@ -65,7 +65,7 @@ class Network:
                         if not response.ok:
                             raise HTTPError(response.status, response.reason, url)
 
-                        return await response.text()
+                        return await response.text(errors="replace")
                 
                 if self._mode == "dynamic" and self._context:
                     playwright_page = await self._context.new_page() # Creating a new page here is faster as page load can be started immediately
