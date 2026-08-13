@@ -45,10 +45,13 @@ class Crawler:
     async def crawl_page(page: Page, network: Network) -> list[Url] | None:
         await Crawler._fetch_page(page, network)
 
-        if page.url.is_XML:
-            return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_xml_page, page)
-        
-        return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html_page, page)
+        try:
+            if page.url.is_XML:
+                return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_xml_page, page)
+            
+            return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html_page, page)
+        except Exception as e:
+            print(e)
 
 
     @staticmethod
