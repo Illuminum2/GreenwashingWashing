@@ -35,7 +35,7 @@ class Url:
         self.host = url.host
         self.port = url.port
         self.path = url.path
-        self.suffix = url.suffix
+        self.suffix = url.suffix.lower()
         self.query = url.query
         self.fragment = url.fragment
 
