@@ -1,4 +1,3 @@
-from urllib.parse import urlparse, urlsplit, urldefrag
 from yarl import URL
 
 import tld
@@ -78,4 +77,4 @@ class Url:
 
 
     def __hash__(self):
-        return hash(self.raw)
+        return hash(self.string)
