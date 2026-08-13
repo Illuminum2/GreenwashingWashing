@@ -44,7 +44,7 @@ class Matcher:
 
 
     @staticmethod
-    async def match_queue(in_q: asyncio.Queue, out_q: asyncio.Queue) -> None:
+    async def run(in_q: asyncio.Queue, out_q: asyncio.Queue) -> None:
         try:
             async with asyncio.TaskGroup() as tg:
                 async for page in Pipeline.queue_drain(in_q):

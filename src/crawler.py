@@ -64,7 +64,7 @@ class Crawler:
 
 
     @staticmethod
-    async def crawl_site(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
+    async def run(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
         try:
             async with Network(mode=mode) as network:
                 async with asyncio.TaskGroup() as tg:

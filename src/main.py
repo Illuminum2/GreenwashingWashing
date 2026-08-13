@@ -3,9 +3,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 from crawler import Crawler
 from matcher import Matcher
-from printer import Printer, get_printer
+from printer import get_printer
 
-from sites import Site, Page
+from sites import Site
 from url import Url
 
 from config import BASE_URL, SITEMAP_PATH, CONCURRENT_WORKER_THREADS
@@ -27,9 +27,9 @@ async def main():
         print_q = asyncio.Queue()
 
         async with asyncio.TaskGroup() as tg:
-            tg.create_task(Crawler.crawl_site(site, match_q))
-            tg.create_task(Matcher.match_queue(match_q, print_q))
-            tg.create_task(get_printer().print_queue(print_q))
+            tg.create_task(Crawler.run(site, match_q))
+            tg.create_task(Matcher.run(match_q, print_q))
+            tg.create_task(get_printer().run(print_q))
 
 
 if __name__ == '__main__':

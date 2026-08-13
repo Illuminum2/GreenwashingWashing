@@ -16,7 +16,7 @@ class Printer(ABC):
         pass
 
 
-    async def print_queue(self, in_q: asyncio.Queue) -> None:
+    async def run(self, in_q: asyncio.Queue) -> None:
         async with asyncio.TaskGroup() as tg:
             async with self:
                 async for page in Pipeline.queue_drain(in_q):
