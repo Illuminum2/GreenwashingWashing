@@ -1,35 +1,26 @@
 import asyncio
-import re
 
 from pipeline import Pipeline
 
 from sites import Page
+from patterns import compile_patterns
 
 from config import MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
 
 class Matcher:
-    @staticmethod
-    def _compile_patterns(patterns: list[str]) -> re.Pattern:
-        pattern = '|'.join("(?:%s)" % case for case in patterns) # Merge patterns into one
-
-        if pattern != '': # Empty string matches everything
-            return re.compile(pattern, re.I | re.U)
-        return re.compile(r"(?!)")
-
+    _match_prog = compile_patterns(MATCH_PATTERNS)
+    _match_exclusion_prog = compile_patterns(MATCH_EXCLUSION_PATTERNS)
 
     @staticmethod
-    def match_content(content: str, match_patterns: list[str] = MATCH_PATTERNS, anti_match_patterns: list[str] = MATCH_EXCLUSION_PATTERNS) -> list[str]:
-        if not match_patterns:
+    def match_content(content: str) -> list[str]:
+        if not MATCH_PATTERNS:
             raise ValueError('Empty list of match patterns provided')
-
-        match_prog = Matcher._compile_patterns(match_patterns)
-        match_exclusion_prog = Matcher._compile_patterns(anti_match_patterns)
 
         matches = []
 
         for word in content.split():
-            if match_prog.search(word) and not match_exclusion_prog.search(word):
+            if Matcher._match_prog.search(word) and not Matcher._match_exclusion_prog.search(word):
                 matches.append(word)
 
         return matches
