@@ -54,7 +54,7 @@ class Network:
         ),
         reraise=True
     )
-    async def fetch_url(self, url: Url) -> str | None:
+    async def fetch_url(self, url: Url) -> str:
         # https://stackoverflow.com/a/73556999
         semaphore = self._semaphore if self._semaphore else nullcontext()
 
@@ -71,12 +71,14 @@ class Network:
                     playwright_page = await self._context.new_page() # Creating a new page here is faster as page load can be started immediately
 
                     try:
+                        response = None
+
                         try:
                             response = await playwright_page.goto(url.string, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
                         except PlaywrightTimeout:
-                            print(f"Reached timeout on '{Url}', proceeding with partial content")
+                            print(f"Reached timeout on '{url}', proceeding with partial content")
 
-                        if 'response' in locals() and not response.status < 400:
+                        if response is not None and response.status >= 400:
                             raise HTTPError(response.status, response.status_text, url)
                         
                         return await playwright_page.content()
