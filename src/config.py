@@ -44,3 +44,5 @@ SCRAPING_MODE = "dynamic" # 'static': use aiohttp; 'dynamic': use playwright
 
 STATIC_SCRAPE_TIMEOUT_MS = 5000 # Time in ms until aiohttp(static) timeout
 DYNAMIC_SCRAPE_TIMEOUT_MS = 10000 # Time in ms until playwright(dynamic) timeout
+
+MAX_CRAWL_DEPTH = 10
