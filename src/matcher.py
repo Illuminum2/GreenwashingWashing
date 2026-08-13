@@ -3,14 +3,14 @@ import asyncio
 from pipeline import Pipeline
 
 from sites import Page
-from patterns import compile_patterns
+from patterns import Patterns
 
 from config import MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
 
 class Matcher:
-    _match_prog = compile_patterns(MATCH_PATTERNS)
-    _match_exclusion_prog = compile_patterns(MATCH_EXCLUSION_PATTERNS)
+    _match_prog = Patterns.compile_patterns_iu(MATCH_PATTERNS)
+    _match_exclusion_prog = Patterns.compile_patterns_iu(MATCH_EXCLUSION_PATTERNS)
 
     @staticmethod
     def match_content(content: str) -> list[str]:
