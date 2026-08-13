@@ -12,7 +12,9 @@ URL_PATH_EXCLUSION_PATTERNS = [ # Excludes URL paths from getting matched; case-
 
 
 # Matching:
-MATCH_PATTERNS = [ # Patterns that words must match; case-insensitive
+LETTER_STRIP_PATTERN = r"[\W\d_^-]" # Pattern for parts of a word that get stripped before matching; default is every non-letter except '-'
+
+MATCH_PATTERNS = [ # Patterns that words must match; case-insensitive unless pattern wrapped in '(?-i:...)'
     r"öko",
     r"bio",
     r"umwe",

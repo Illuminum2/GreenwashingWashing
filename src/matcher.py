@@ -1,16 +1,18 @@
 import asyncio
+import re
 
 from pipeline import Pipeline
 
 from sites import Page
 from patterns import Patterns
 
-from config import MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
+from config import LETTER_STRIP_PATTERN, MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
 
 class Matcher:
     _match_prog = Patterns.compile_patterns_iu(MATCH_PATTERNS)
     _match_exclusion_prog = Patterns.compile_patterns_iu(MATCH_EXCLUSION_PATTERNS)
+    _letter_strip_prog = Patterns.compile(LETTER_STRIP_PATTERN, re.U)
 
     @staticmethod
     def match_content(content: str) -> list[str]:
@@ -20,6 +22,7 @@ class Matcher:
         matches = []
 
         for word in content.split():
+            word = Matcher._letter_strip_prog.sub('', word)
             if Matcher._match_prog.search(word) and not Matcher._match_exclusion_prog.search(word):
                 matches.append(word)
 
