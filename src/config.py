@@ -7,14 +7,16 @@ URL_MODE = "absolute" # 'absolute': remove query and fragment parameters; 'url':
 URL_ALLOWED_SUFFIXES = ["", ".php", ".htm", ".html"] # Specify url path suffixes that are allowed to be scraped, '': URLs missing a suffix RECOMMENDATION: do not change these (use path exclusion instead)
 
 URL_PATH_EXCLUSION_PATTERNS = [ # Excludes URL paths from getting matched; case-insensitive
-    r"^/filestore/.*"
+    r"^/filestore/.*",
 ]
 
 
 # Matching:
+#STRIP_NON_LETTERS = True # Replace every letter of a word that is not part of the unicode letter category or a '-' before matching
 LETTER_STRIP_PATTERN = r"[\W\d_^-]" # Pattern for parts of a word that get stripped before matching; default is every non-letter except '-'
 
 MATCH_PATTERNS = [ # Patterns that words must match; case-insensitive unless pattern wrapped in '(?-i:...)'
+    # German:
     r"öko",
     r"bio",
     r"umwe",
@@ -24,10 +26,40 @@ MATCH_PATTERNS = [ # Patterns that words must match; case-insensitive unless pat
     r"eutr",
     r"ergi",
     r"strom",
+    # English:
+    r"green",
+    r"ecolog",
+    r"eco-",
+    r"sustainab",
+    r"renewab",
+    r"environment",
+    r"carbon",
+    r"footprint",
+    r"offset",
+    r"recycl",
+    r"organic",
+    r"biodegrad",
+    r"energ",
+    r"(?-i:CO)", # Case-sensitive
+    # Dutch:
+    r"groen",
+    r"duurza",
+    r"milieu",
+    r"hernieuwb",
+    r"uitstoot",
+    r"klima",
+    r"circulair",
+    r"stroom",
 ]
 
 MATCH_EXCLUSION_PATTERNS = [ # Pattern that words must not match; Case-insensitive
-    r"umweg"
+    r"umweg",
+    r"groente",
+    r"energie",
+    r"energy",
+    r"^strom$",
+    r"^stroom$",
+    r"^stromed$",
 ]
 
 
@@ -44,7 +76,7 @@ DEFAULT_NETWORK_MODE = "static" # 'static': use aiohttp (raw network requests); 
 
 
 # Crawling:
-SCRAPING_MODE = "dynamic" # 'static': use aiohttp; 'dynamic': use playwright
+SCRAPING_MODE = "static" # 'static': use aiohttp; 'dynamic': use playwright
 
 STATIC_SCRAPE_TIMEOUT_MS = 5000 # Time in ms until aiohttp(static) timeout
 DYNAMIC_SCRAPE_TIMEOUT_MS = 10000 # Time in ms until playwright(dynamic) timeout
@@ -59,4 +91,4 @@ CSV_PATH = "./output.csv"
 
 # Caching:
 CACHE_PATH = "./cache/" # Directory of the cache
-CACHE_EXPIRY_S = 600 # Seconds until a cached value expires; 'None': keep it forever, '0': disable caching
+CACHE_EXPIRY_S = 3600 # Seconds until a cached value expires; 'None': keep it forever, '0': disable caching
