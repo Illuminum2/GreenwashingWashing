@@ -3,9 +3,9 @@ import csv
 from abc import ABC, abstractmethod
 from typing import Literal, Self
 
-from pipeline import Pipeline
+from utils.pipeline import Pipeline
 
-from sites import Page
+from data.sites import Page
 
 from config import PRINT_MODE, CSV_PATH
 

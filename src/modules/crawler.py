@@ -4,10 +4,10 @@ from typing import Literal
 from html_to_markdown import convert, ConversionOptions
 from lxml import etree
 
-from network import Network, HTTPError, NetworkError
+from network.network import Network, HTTPError, NetworkError
 
-from sites import Site, Page
-from url import Url
+from data.sites import Site, Page
+from network.url import Url
 
 from config import SCRAPING_MODE
 

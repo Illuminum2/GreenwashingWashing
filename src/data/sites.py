@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Final
 
-from url import Url
+from network.url import Url
 
 from config import MAX_CRAWL_DEPTH
 

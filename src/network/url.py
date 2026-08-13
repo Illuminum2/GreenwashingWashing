@@ -2,7 +2,7 @@ from yarl import URL
 
 import tld
 
-from patterns import Patterns
+from utils.patterns import Patterns
 
 from config import BASE_URL, URL_MODE, URL_ALLOWED_SUFFIXES, URL_PATH_EXCLUSION_PATTERNS
 

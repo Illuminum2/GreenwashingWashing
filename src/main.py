@@ -1,12 +1,12 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-from crawler import Crawler
-from matcher import Matcher
-from printer import Printer
+from modules.crawler import Crawler
+from modules.matcher import Matcher
+from modules.printer import Printer
 
-from sites import Site
-from url import Url
+from data.sites import Site
+from network.url import Url
 
 from config import BASE_URL, SITEMAP_PATH, CONCURRENT_WORKER_THREADS
 

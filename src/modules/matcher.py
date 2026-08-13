@@ -1,10 +1,10 @@
 import asyncio
 import re
 
-from pipeline import Pipeline
+from utils.pipeline import Pipeline
 
-from sites import Page
-from patterns import Patterns
+from data.sites import Page
+from utils.patterns import Patterns
 
 from config import LETTER_STRIP_PATTERN, MATCH_PATTERNS, MATCH_EXCLUSION_PATTERNS
 
