@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
@@ -11,14 +12,31 @@ from network.url import Url
 from utils.config import Config
 
 
-async def main():
-    if not Config.has("general.base_url"):
-        raise ValueError("Base url is not set")
-    site = Site(Url(Config.get("general.base_url")))
+parser = argparse.ArgumentParser(description="A script crawling a website to report every page containing a greenwashing related word. Configure match patterns in './config.toml'.")
 
-    site.add_page(Url(Config.get("general.base_url")))
+parser.add_argument("url", type=str, help="Base website url, must include schema (https/http) and full host")
+parser.add_argument("-s", "--static", action="store_true", help="Use aiohttp requests (raw network requests) for scraping")
+parser.add_argument("-d", "--dynamic", action="store_true", help="Use playwright (chromium instance) for scraping")
+
+args = parser.parse_args()
+
+
+async def main():
+    if not args.url:
+        raise ValueError("Base url is not set")
+    base_url = Url(args.url)
+
+    mode = Config.get("crawl.default_mode", passed=("dynamic" if args.dynamic else ("static" if args.static else None)))
+
+
+    print(f"Scraping site '{base_url}' with mode '{mode}':")
+
+
+    site = Site(base_url)
+
+    site.add_page(base_url)
     if Config.has("general.sitemap_path"):
-        site.add_page(Url(Config.get("general.sitemap_path"), Url(Config.get("general.base_url"))))
+        site.add_page(Url(Config.get("general.sitemap_path"), base_url))
 
     if Config.get("multithreading.concurrent_threads", 10) == 0:
         raise ValueError("Concurrent worker threads is set to 0, must be >1 or -1 for unlimited")
@@ -31,7 +49,7 @@ async def main():
         print_q = asyncio.Queue()
 
         async with asyncio.TaskGroup() as tg:
-            tg.create_task(Crawler.run(site, match_q))
+            tg.create_task(Crawler.run(site, match_q, mode))
             tg.create_task(Matcher.run(match_q, print_q))
             tg.create_task(Printer.run(print_q))
 

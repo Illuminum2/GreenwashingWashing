@@ -1,5 +1,5 @@
 [general]
-base_url = "https://books.toscrape.com/" # Base website url; must include schema (https/http) and full host
+# Looking to configure the base URL? Run -h
 sitemap_path = "/sitemap.xml" # Url path to sitemap
 
 url_mode = "absolute" # 'absolute': remove query and fragment parameters; 'url': keeps them
@@ -77,7 +77,7 @@ max_retry_delay = 20 # Maximum delay in seconds before next retry attempt
 
 
 [crawl]
-mode = "static" # 'static': use aiohttp (raw network requests); 'dynamic': use playwright (browser instances)
+default_mode = "static" # 'static': use aiohttp (raw network requests); 'dynamic': use playwright (browser instances)
 max_recursion_depth = 10 # Limit on how many steps can be taken from the site root/sitemap
 
 static_timeout_ms = 5000 # Time in ms until aiohttp(static) timeout
