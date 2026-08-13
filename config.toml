@@ -13,7 +13,7 @@ url_path_exclusion_patterns = [ # Excludes URL paths from getting matched; case-
 
 [match]
 #STRIP_NON_LETTERS = True # Replace every letter of a word that is not part of the unicode letter category or a '-' before matching
-letter_strip_pattern = "(?!-)[[\\W\\d_]" # Pattern for parts of a word that get stripped before matching; default is every non-letter except '-'
+letter_strip_pattern = "(?!-)[\\W\\d_]" # Pattern for parts of a word that get stripped before matching; default is every non-letter except '-'
 
 patterns = [ # Patterns that words must match; case-insensitive unless pattern wrapped in '(?-i:...)'
     # German:
