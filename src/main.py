@@ -1,9 +1,9 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-from pipeline import Pipeline
 from crawler import Crawler
 from matcher import Matcher
+from printer import Printer, get_printer
 
 from sites import Site, Page
 from url import Url
@@ -29,19 +29,7 @@ async def main():
         async with asyncio.TaskGroup() as tg:
             tg.create_task(Crawler.crawl_site(site, match_q))
             tg.create_task(Matcher.match_queue(match_q, print_q))
-            tg.create_task(print_queue(print_q))
-
-
-async def print_queue(in_q: asyncio.Queue) -> None:
-    async with asyncio.TaskGroup() as tg:
-        async for page in Pipeline.queue_drain(in_q):
-            tg.create_task(print_page(page))
-
-
-async def print_page(page: Page) -> None:
-    if page.matches:
-        print(f"Page '{page.url}': ", end="")
-        print (*page.matches, sep=", ")
+            tg.create_task(get_printer().print_queue(print_q))
 
 
 if __name__ == '__main__':
