@@ -43,6 +43,12 @@ class Network(ABC):
         pass
 
 
+    def get(mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> Network:
+        if mode == "dynamic":
+            return DynamicNetwork()
+        return StaticNetwork()
+
+
     @abstractmethod
     async def _fetch_url(self, url: Url) -> str:
         pass
@@ -168,10 +174,3 @@ class DynamicNetwork(Network):
         with suppress(Exception): await self._playwright.stop()
 
         await super().__aexit__(exc_type, exc_val, exc_tb)
-
-
-
-def get_network(mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> Network:
-    if mode == "dynamic":
-        return DynamicNetwork()
-    return StaticNetwork()
