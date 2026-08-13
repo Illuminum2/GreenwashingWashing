@@ -22,21 +22,21 @@ class Crawler:
 
 
     @staticmethod
-    def _parse_xml_page(page: Page) -> list[str] | None:
+    def _parse_xml_page(page: Page) -> list[Url] | None:
         if page.raw is not None and page.raw != '': # Empty content throws lxml exception
             parser = etree.XMLParser(remove_blank_text=True)
             xml = etree.XML(bytes(page.raw, encoding="utf-8"), parser)
-            page.links = xml.xpath("//*[local-name() = 'loc']/text()")
+            page.links = [Url(link, page.url) for link in xml.xpath("//*[local-name() = 'loc']/text()")]
 
             return page.links
 
 
     @staticmethod
-    def _parse_html_page(page: Page) -> list[str] | None:
+    def _parse_html_page(page: Page) -> list[Url] | None:
         if page.raw is not None:
             result = convert(page.raw, ConversionOptions(output_format="plain", skip_images=True)) # Parse HTML to text
             page.content = result.content
-            page.links = [link.href for link in result.metadata.links]
+            page.links = [Url(link.href, page.url) for link in result.metadata.links]
 
             return page.links
     
@@ -57,7 +57,7 @@ class Crawler:
 
         if links is not None:
             for link in links:
-                if (link_page := page.site.add_page(Url(link, page.url), depth)):
+                if (link_page := page.site.add_page(link, depth)):
                     tg.create_task(Crawler.crawl_page_recursive(link_page, out_q, tg, network, depth+1))
 
         await out_q.put(page)

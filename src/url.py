@@ -10,7 +10,7 @@ class Url:
         self.raw: str = url
         self._url = URL(url)
 
-        if base is not None and not self._url.host:
+        if base is not None and not self._url.host: # Do not override base if base exists
             self.set_base(base)
 
         if absolute:
