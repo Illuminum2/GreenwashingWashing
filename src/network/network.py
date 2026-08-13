@@ -10,7 +10,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_i
 from utils.cache import Cache
 from network.url import Url
 
-from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT_MS, STATIC_SCRAPE_TIMEOUT_MS
+from config import CONCURRENT_NETWORK_REQUESTS, MAX_NETWORK_RETRIES, MIN_NETWORK_RETRY_DELAY, MAX_NETWORK_RETRY_DELAY, DEFAULT_NETWORK_MODE, DYNAMIC_SCRAPE_TIMEOUT_MS, STATIC_SCRAPE_TIMEOUT_MS, PLAYWRIGHT_LOADED_EVENT
 
 
 class HTTPError(Exception):
@@ -151,7 +151,7 @@ class DynamicNetwork(Network):
             response = None
 
             try:
-                response = await playwright_page.goto(url.string, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
+                response = await playwright_page.goto(url.string, wait_until="load" if PLAYWRIGHT_LOADED_EVENT != "networkidle" else PLAYWRIGHT_LOADED_EVENT, timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
             except PlaywrightTimeout:
                 print(f"Reached timeout on '{url}', proceeding with partial content")
 
