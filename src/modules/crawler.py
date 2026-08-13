@@ -42,7 +42,7 @@ class Crawler:
     
 
     @staticmethod
-    async def crawl_page(page: Page, network: Network) -> list[str] | None:
+    async def crawl_page(page: Page, network: Network) -> list[Url] | None:
         await Crawler._fetch_page(page, network)
 
         if page.url.is_XML:
