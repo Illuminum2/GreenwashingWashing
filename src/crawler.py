@@ -15,7 +15,10 @@ from config import SCRAPING_MODE
 class Crawler:
     @staticmethod
     async def _fetch_page(page: Page, network: Network) -> None:
-        page.raw = await network.fetch_url(page.url)
+        try:
+            page.raw = await network.fetch_url(page.url)
+        except (HTTPError, NetworkError, UnicodeDecodeError) as e:
+            page.error = str(e)
 
 
     @staticmethod
@@ -40,12 +43,7 @@ class Crawler:
 
     @staticmethod
     async def crawl_page(page: Page, network: Network) -> list[str] | None:
-        try:
-            await Crawler._fetch_page(page, network)
-        except (HTTPError, NetworkError, UnicodeDecodeError) as e:
-            print(e)
-            page.error = str(e)
-            return None
+        await Crawler._fetch_page(page, network)
 
         if page.url.is_XML:
             return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_xml_page, page)
