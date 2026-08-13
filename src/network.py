@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+from abc import ABC, abstractmethod
 from contextlib import nullcontext, suppress
 from typing import Literal, Self
 
@@ -34,15 +35,17 @@ class NetworkError(Exception):
 
 
 
-class Network:
+class Network(ABC):
     _semaphore: asyncio.Semaphore | None = None
 
 
-    def __init__(self, mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> None:
-        self._mode = mode
-        self._session: aiohttp.ClientSession | None = None
-        self._context = None
-        self._playwright, self._browser = None, None
+    def __init__(self) -> None:
+        pass
+
+
+    @abstractmethod
+    async def _fetch_url(self, url: Url) -> str:
+        pass
 
 
     @retry(
@@ -60,30 +63,7 @@ class Network:
 
         async with semaphore:
             try:
-                if self._mode == "static" and self._session:
-                    async with self._session.get(url.string) as response:
-                        if not response.ok:
-                            raise HTTPError(response.status, response.reason, url)
-
-                        return await response.text(errors="replace")
-                
-                if self._mode == "dynamic" and self._context:
-                    playwright_page = await self._context.new_page() # Creating a new page here is faster as page load can be started immediately
-
-                    try:
-                        response = None
-
-                        try:
-                            response = await playwright_page.goto(url.string, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
-                        except PlaywrightTimeout:
-                            print(f"Reached timeout on '{url}', proceeding with partial content")
-
-                        if response is not None and response.status >= 400:
-                            raise HTTPError(response.status, response.status_text, url)
-                        
-                        return await playwright_page.content()
-                    finally:
-                        await playwright_page.close()
+                return await self._fetch_url(url)
 
             except HTTPError as e:
                 print(e)
@@ -91,8 +71,6 @@ class Network:
             except (aiohttp.ClientError, asyncio.TimeoutError, PlaywrightError) as e:
                 print(f"Exception '{type(e)}' was raised while trying to accessing '{url}': {e}")
                 raise NetworkError(str(e), url)
-
-            raise RuntimeError(f"Network in mode '{self._mode}' is not initialized, use 'async with Network()'")
 
 
     async def __aenter__(self) -> Self:
@@ -106,27 +84,94 @@ class Network:
                 else None
             )
 
-        if self._mode == "static":
-            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=STATIC_SCRAPE_TIMEOUT_MS / 1000))
-        elif self._mode == "dynamic":
-            self._playwright = await async_playwright().start()
-            self._browser = await self._playwright.chromium.launch()
-            self._context = await self._browser.new_context()
+        return self
 
-            await self._context.route(
-                "**/*",
-                lambda route: route.abort() if route.request.resource_type in ["image", "stylesheet", "font"] else route.continue_()
-            )
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        pass
+
+
+
+class StaticNetwork(Network):
+    def __init__(self) -> None:
+        self._session: aiohttp.ClientSession | None = None
+
+
+    async def _fetch_url(self, url: Url) -> str:
+        async with self._session.get(url.string) as response:
+            if not response.ok:
+                raise HTTPError(response.status, response.reason, url)
+
+            return await response.text(errors="replace")
+
+
+    async def __aenter__(self) -> Self:
+        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=(STATIC_SCRAPE_TIMEOUT_MS / 1000)))
+
+        await super().__aenter__()
 
         return self
 
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        if self._session:
-            with suppress(Exception): await self._session.close()
-        if self._context:
-            with suppress(Exception): await self._context.close()
-        if self._browser:
-            with suppress(Exception): await self._browser.close()
-        if self._playwright:
-            with suppress(Exception): await self._playwright.stop()
+        with suppress(Exception): await self._session.close()
+
+        await super().__aexit__(exc_type, exc_val, exc_tb)
+
+
+
+class DynamicNetwork(Network):
+    def __init__(self) -> None:
+        self._context = None
+        self._browser = None
+        self._playwright = None
+
+
+    async def _fetch_url(self, url: Url) -> str:
+        playwright_page = await self._context.new_page()
+        
+        try:
+            response = None
+
+            try:
+                response = await playwright_page.goto(url.string, wait_until="load", timeout=DYNAMIC_SCRAPE_TIMEOUT_MS)
+            except PlaywrightTimeout:
+                print(f"Reached timeout on '{url}', proceeding with partial content")
+
+            if response is not None and response.status >= 400:
+                raise HTTPError(response.status, response.status_text, url)
+            
+            return await playwright_page.content()
+        finally:
+            await playwright_page.close()
+
+
+    async def __aenter__(self) -> Self:
+        self._playwright = await async_playwright().start()
+        self._browser = await self._playwright.chromium.launch()
+        self._context = await self._browser.new_context()
+
+        # Block images, videos, css, fonts etc. from loading
+        await self._context.route(
+            "**/*",
+            lambda route: route.abort() if route.request.resource_type in ["image", "media", "stylesheet", "font"] else route.continue_()
+        )
+        
+        await super().__aenter__()
+
+        return self
+
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        with suppress(Exception): await self._context.close()
+        with suppress(Exception): await self._browser.close()
+        with suppress(Exception): await self._playwright.stop()
+
+        await super().__aexit__(exc_type, exc_val, exc_tb)
+
+
+
+def get_network(mode: Literal['static', 'dynamic'] = DEFAULT_NETWORK_MODE) -> Network:
+    if mode == "dynamic":
+        return DynamicNetwork()
+    return StaticNetwork()

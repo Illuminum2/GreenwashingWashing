@@ -4,7 +4,7 @@ from typing import Literal
 from html_to_markdown import convert, ConversionOptions
 from lxml import etree
 
-from network import Network, HTTPError, NetworkError
+from network import get_network, Network, HTTPError, NetworkError
 
 from sites import Site, Page
 from url import Url
@@ -66,7 +66,7 @@ class Crawler:
     @staticmethod
     async def run(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = SCRAPING_MODE) -> None:
         try:
-            async with Network(mode=mode) as network:
+            async with get_network(mode=mode) as network:
                 async with asyncio.TaskGroup() as tg:
                     [tg.create_task(Crawler.crawl_page_recursive(page, out_q, tg, network)) for page in site.pages]
 
