@@ -42,8 +42,9 @@ class Crawler:
     async def crawl_page(page: Page, network: Network) -> list[str] | None:
         try:
             await Crawler._fetch_page(page, network)
-        except (HTTPError, NetworkError) as e:
+        except (HTTPError, NetworkError, UnicodeDecodeError) as e:
             print(e)
+            page.error = str(e)
             return None
 
         if page.url.is_XML:
