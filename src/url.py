@@ -4,7 +4,7 @@ import tld
 
 from patterns import Patterns
 
-from config import URL_MODE, URL_ALLOWED_SUFFIXES, URL_PATH_EXCLUSION_PATTERNS
+from config import BASE_URL, URL_MODE, URL_ALLOWED_SUFFIXES, URL_PATH_EXCLUSION_PATTERNS
 
 
 class Url:
@@ -45,7 +45,13 @@ class Url:
         self._update_vars(self._url)
 
 
-    def is_in_base(self, base_url: Url) -> bool:
+    def is_in_base(self, base_url: Url | str | None = BASE_URL) -> bool:
+        if base_url is None:
+            return not bool(self.host) # Check if site is relative
+
+        if not isinstance(base_url, Url):
+            base_url = Url(base_url)
+        
         return bool(self.fld == base_url.fld)
 
 
@@ -54,7 +60,7 @@ class Url:
         return self.suffix == ".xml"
 
 
-    def is_valid(self, base_url: Url) -> bool:
+    def is_valid(self, base_url: Url | str | None = BASE_URL) -> bool:
         return (
             (self.is_in_base(base_url)) # Check if URL is in base url
             and (self.suffix in URL_ALLOWED_SUFFIXES or self.is_XML) # Check file type
