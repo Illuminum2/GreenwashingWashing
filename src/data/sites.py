@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Final
+from typing import Final, ValuesView
 
 from network.url import Url
 
@@ -14,17 +14,12 @@ class Site:
 
 
     @property
-    def page_urls(self) -> list[Url]:
-        return self._pages.keys()
-
-
-    @property
-    def pages(self) -> list[Page]:
+    def pages(self) -> ValuesView[Page]:
         return self._pages.values()
 
 
     def add_page(self, url: Url, depth: int = 0) -> Page | None:
-        if (url.is_valid(self.base_url)) and (url not in self.page_urls) and (depth <= Config.get("crawl.max_recursion_depth", 10)):
+        if (url.is_valid(self.base_url)) and (url not in self._pages) and (depth <= Config.get("crawl.max_recursion_depth", 10)):
             self._pages[url] = Page(url, self, depth)
             return self._pages[url]
 
