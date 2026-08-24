@@ -34,7 +34,7 @@ async def main():
         Cache.disable()
 
 
-    print(f"Scraping site '{base_url}' with mode '{mode}'{' (cache skipped)' if args.cache_skip else None}:\n")
+    print(f"Scraping site '{base_url}' with mode '{mode}'{' (cache skipped)' if args.cache_skip else ''}:\n")
 
 
     site = Site(base_url)
