@@ -70,7 +70,7 @@ class Network(ABC):
             return cached
 
         # https://stackoverflow.com/a/73556999
-        semaphore = self._semaphore if self._semaphore else nullcontext()
+        semaphore = self._semaphore if self._semaphore is not None else nullcontext()
 
         async with semaphore:
             try:
