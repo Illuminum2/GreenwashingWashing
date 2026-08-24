@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from contextlib import nullcontext, suppress
 from typing import Literal, Self
 
-from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout
+from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout, Playwright, Browser as PlaywrightBrowser, BrowserContext as PlaywrightContext
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_if_exception, retry_if_exception_type
 
 from utils.cache import Cache
@@ -20,6 +20,7 @@ class HTTPError(Exception):
         self.reason = reason
         self.url = url
 
+
     def __str__(self) -> str:
         return f"Got response status code '{self.status}: {self.reason}' while trying to access '{self.url}'"
 
@@ -30,6 +31,7 @@ class NetworkError(Exception):
         super().__init__(text)
         self.text = text
         self.url = url
+
 
     def __str__(self) -> str:
         return self.text
@@ -125,9 +127,9 @@ class StaticNetwork(Network):
 
 
     async def __aenter__(self) -> Self:
-        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=(Config.get("crawl.static_timeout_ms", 5000) / 1000)))
-
         await super().__aenter__()
+
+        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=(Config.get("crawl.static_timeout_ms", 5000) / 1000)))
 
         return self
 
@@ -143,9 +145,9 @@ class DynamicNetwork(Network):
     def __init__(self) -> None:
         super().__init__()
 
-        self._context = None
-        self._browser = None
-        self._playwright = None
+        self._playwright: Playwright | None = None
+        self._browser: PlaywrightBrowser | None = None
+        self._context: PlaywrightContext | None = None
 
 
     async def _fetch_url(self, url: Url) -> str:
@@ -169,6 +171,8 @@ class DynamicNetwork(Network):
 
 
     async def __aenter__(self) -> Self:
+        await super().__aenter__()
+
         self._playwright = await async_playwright().start()
         self._browser = await self._playwright.chromium.launch()
         self._context = await self._browser.new_context()
@@ -178,8 +182,6 @@ class DynamicNetwork(Network):
             "**/*",
             lambda route: route.abort() if route.request.resource_type in ["image", "media", "stylesheet", "font"] else route.continue_()
         )
-        
-        await super().__aenter__()
 
         return self
 

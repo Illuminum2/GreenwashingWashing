@@ -11,6 +11,7 @@ from utils.config import Config
 class Url:
     _path_exclusion_prog = Patterns.compile_patterns_iu(Config.get("general.url_path_exclusion_patterns"))
 
+
     @staticmethod
     def parse_url(url: str, base: Url | None = None, absolute: bool = Config.get("general.url_mode", "absolute") == "absolute") -> Url | None:
         with suppress(ValueError, TypeError):
