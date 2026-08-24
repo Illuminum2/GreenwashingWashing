@@ -36,7 +36,7 @@ class Page:
     depth: int = 0
 
     raw: str | None = None
-    error: str | None = None
+    errors: list[str] = field(default_factory=list)
     content: str | None = None
     links: list[Url] = field(default_factory=list)
     matches: list[str] = field(default_factory=list)

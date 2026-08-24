@@ -28,7 +28,7 @@ class Printer(ABC):
         async with Printer.get(mode) as printer:
             async with asyncio.TaskGroup() as tg:
                 async for page in Pipeline.queue_drain(in_q):
-                    if page.matches or (page.error and not page.url.is_XML):
+                    if page.matches or (page.errors and not page.url.is_XML):
                         tg.create_task(printer.print_page(page))
 
 
@@ -45,7 +45,7 @@ class ConsolePrinter(Printer):
     async def print_page(self, page: Page) -> None: # Technically just synchronous
         print(f"Page '{page.url}': ", end="")
         print (*page.matches, sep=", ")
-        print('\n'.join(page.error))
+        print('\n'.join(page.errors))
 
 
 
@@ -59,7 +59,7 @@ class CsvPrinter(Printer):
 
 
     async def print_page(self, page: Page) -> None:
-        self._writer.writerow([page.url, ", ".join(page.matches), page.error])
+        self._writer.writerow([page.url, ", ".join(page.matches), '\n'.join(page.errors)])
 
 
     async def __aenter__(self) -> Self:

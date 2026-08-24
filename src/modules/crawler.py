@@ -18,7 +18,7 @@ class Crawler:
         try:
             page.raw = await network.fetch_url(page.url)
         except (HTTPError, NetworkError, UnicodeDecodeError) as e:
-            page.error = str(e)
+            page.errors.append(str(e))
 
 
     @staticmethod
@@ -51,7 +51,7 @@ class Crawler:
             
             return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html_page, page)
         except Exception as e:
-            print(e)
+            page.errors.append(str(e))
 
 
     @staticmethod
