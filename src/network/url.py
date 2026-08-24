@@ -1,6 +1,7 @@
-from yarl import URL
+from contextlib import suppress
 
 import tld
+from yarl import URL
 
 from utils.patterns import Patterns
 
@@ -9,6 +10,18 @@ from utils.config import Config
 
 class Url:
     _path_exclusion_prog = Patterns.compile_patterns_iu(Config.get("general.url_path_exclusion_patterns"))
+
+    @staticmethod
+    def parse_url(url: str, base: Url | None = None, absolute: bool = Config.get("general.url_mode", "absolute") == "absolute") -> Url | None:
+        with suppress(ValueError, TypeError):
+            return Url(url, base, absolute)
+        return None
+
+
+    @staticmethod
+    def parse_urls(urls: list[str], base: Url | None = None, absolute: bool = Config.get("general.url_mode", "absolute") == "absolute") -> list[Url]:
+        return [url for raw in urls if (url := Url.parse_url(raw, base)) is not None]
+
 
     def __init__(self, url: str, base: Url | None = None, absolute: bool = Config.get("general.url_mode", "absolute") == "absolute") -> None:
         self.raw: str = url

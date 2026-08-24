@@ -26,7 +26,7 @@ class Crawler:
         if page.raw is not None and page.raw != '': # Empty content throws lxml exception
             parser = etree.XMLParser(remove_blank_text=True)
             xml = etree.XML(bytes(page.raw, encoding="utf-8"), parser)
-            page.links = [Url(link, page.url) for link in xml.xpath("//*[local-name() = 'loc']/text()")]
+            page.links = Url.parse_urls(xml.xpath("//*[local-name() = 'loc']/text()"), page.url)
 
             return page.links
 
@@ -36,7 +36,7 @@ class Crawler:
         if page.raw is not None:
             result = convert(page.raw, ConversionOptions(output_format="plain", skip_images=True)) # Parse HTML to text
             page.content = result.content
-            page.links = [Url(link.href, page.url) for link in result.metadata.links]
+            page.links = Url.parse_urls([link.href for link in result.metadata.links], page.url)
 
             return page.links
     
