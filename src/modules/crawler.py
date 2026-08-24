@@ -60,7 +60,7 @@ class Crawler:
 
         if links is not None:
             for link in links:
-                if (link_page := page.site.add_page(link, depth)):
+                if link_page := page.site.add_page(link, depth + 1):
                     tg.create_task(Crawler.crawl_page_recursive(link_page, out_q, tg, network, depth+1))
 
         await out_q.put(page)
