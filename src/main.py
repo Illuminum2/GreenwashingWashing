@@ -23,7 +23,7 @@ async def main():
     if Config.get("multithreading.concurrent_threads", 10) == 0:
         raise ValueError("Concurrent worker threads is set to 0, must be >1 or -1 for unlimited")
 
-    max_workers = Config.get("multithreading.concurrent_threads")
+    max_workers = Config.get("multithreading.concurrent_threads", 10)
     with ThreadPoolExecutor(max_workers=(max_workers if max_workers > 0 else None)) as executor:
         asyncio.get_running_loop().set_default_executor(executor)
 
