@@ -14,6 +14,10 @@ from utils.config import Config
 async def main():
     if not Config.has("general.base_url"):
         raise ValueError("Base url is not set")
+
+    if not Config.get("match.patterns"):
+        raise ValueError('Empty match patterns list provided')
+
     site = Site(Url(Config.get("general.base_url")))
 
     site.add_page(Url(Config.get("general.base_url")))

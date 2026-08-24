@@ -16,7 +16,7 @@ class Matcher:
 
     @staticmethod
     def match_content(content: str) -> list[str]:
-        if not Config.get("match.patterns"):
+        if not Config.get("match.patterns"): # Also checked in main
             raise ValueError('Empty match patterns list provided')
 
         matches = []
