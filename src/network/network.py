@@ -122,7 +122,7 @@ class StaticNetwork(Network):
 
 
     async def __aenter__(self) -> Self:
-        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=(Config.get("network.static_timeout_ms", 5000) / 1000)))
+        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=(Config.get("crawl.static_timeout_ms", 5000) / 1000)))
 
         await super().__aenter__()
 
@@ -152,8 +152,8 @@ class DynamicNetwork(Network):
             response = None
 
             try:
-                loaded_event = Config.get("network.playwright_loaded_event", "load")
-                response = await playwright_page.goto(url.string, wait_until="load" if loaded_event != "networkidle" else loaded_event, timeout=Config.get("network.dynamic_timeout_ms", 10000))
+                loaded_event = Config.get("crawl.playwright_loaded_event", "load")
+                response = await playwright_page.goto(url.string, wait_until="load" if loaded_event != "networkidle" else loaded_event, timeout=Config.get("crawl.dynamic_timeout_ms", 10000))
             except PlaywrightTimeout:
                 print(f"Reached timeout on '{url}', proceeding with partial content")
 
