@@ -51,7 +51,7 @@ class ConsolePrinter(Printer):
 class CsvPrinter(Printer):
     def __init__(self, path: str = Config.get("print.csv_path")) -> None:
         if not path:
-            ValueError("Empty CSV path provided")
+            raise ValueError("Empty CSV path provided")
         self._path = path
         self._file = None
         self._writer = None
