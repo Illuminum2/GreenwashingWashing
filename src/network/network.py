@@ -105,7 +105,7 @@ class Network(ABC):
 
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        pass
+        with suppress(Exception): await self._cache.close()
 
 
 
