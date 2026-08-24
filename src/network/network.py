@@ -44,6 +44,7 @@ class Network(ABC):
         self._cache = Cache(type(self).__name__) # Get class name of instance to separate caching by mode
 
 
+    @staticmethod
     def get(mode: Literal['static', 'dynamic'] = Config.get("network.default_mode", "static")) -> Network:
         if mode == "dynamic":
             return DynamicNetwork()
