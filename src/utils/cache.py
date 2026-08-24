@@ -20,7 +20,7 @@ class Cache:
         return await asyncio.get_running_loop().run_in_executor(None, self._cache.set, item, value, expire)
 
     
-    async def retreive(self, item: Any) -> Any:
+    async def retrieve(self, item: Any) -> Any:
         if Cache._disabled is True:
             return None
         

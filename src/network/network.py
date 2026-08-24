@@ -65,7 +65,7 @@ class Network(ABC):
         reraise=True
     )
     async def fetch_url(self, url: Url) -> str:
-        if (cached := await self._cache.retreive(url.string)) is not None:
+        if (cached := await self._cache.retrieve(url.string)) is not None:
             return cached
 
         # https://stackoverflow.com/a/73556999
