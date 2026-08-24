@@ -32,7 +32,10 @@ class Matcher:
     @staticmethod
     async def match_page(page: Page, out_q: asyncio.Queue[Page]) -> None:
         if page.content:
-            page.matches = await asyncio.get_running_loop().run_in_executor(None, Matcher.match_content, page.content)
+            try:
+                page.matches = await asyncio.get_running_loop().run_in_executor(None, Matcher.match_content, page.content)
+            except Exception as e:
+                page.errors.append(str(e))
 
         await out_q.put(page)
 
