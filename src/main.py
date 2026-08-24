@@ -1,43 +1,43 @@
 import asyncio
-import re
+from concurrent.futures import ThreadPoolExecutor
 
-from mapper import Mapper
-from crawler import Crawler
-from matcher import Matcher
+from modules.crawler import Crawler
+from modules.matcher import Matcher
+from modules.printer import Printer
 
+from data.sites import Site, Page
+from network.url import Url
 
-BASE_URL = "https://www.bluechip.at"
-
-MATCH_PATTERNS = [
-    "öko",
-    "bio",
-    "umwe",
-    "achhal",
-    "neuerb",
-    "emission",
-    "eutr",
-    "ergi",
-    "strom",
-]
-
-ANTI_MATCH_PATTERNS = [
-    "umweg"
-]
+from utils.config import Config
 
 
 async def main():
-    site = Mapper.map_site(BASE_URL)
-    
-    await Crawler.crawl_site(site, mode="static")
+    if not Config.has("general.base_url"):
+        raise ValueError("Base url is not set")
 
-    Matcher.match_site(site, MATCH_PATTERNS, ANTI_MATCH_PATTERNS)
+    if not Config.get("match.patterns"):
+        raise ValueError('Empty match patterns list provided')
 
-    #[print(f"Page '{page.url}': {', '.join(map(str, page.matches))}") for page in site.pages if page.matches]
+    site = Site(Url(Config.get("general.base_url")))
 
-    for page in site.pages:
-        if page.matches:
-            print(f"Page '{page.url}': ", end="")
-            print (*page.matches, sep=", ")
+    site.add_page(Url(Config.get("general.base_url")))
+    if Config.has("general.sitemap_path"):
+        site.add_page(Url(Config.get("general.sitemap_path"), Url(Config.get("general.base_url"))))
+
+    if Config.get("multithreading.concurrent_threads", 10) == 0:
+        raise ValueError("Concurrent worker threads is set to 0, must be >1 or -1 for unlimited")
+
+    max_workers = Config.get("multithreading.concurrent_threads", 10)
+    with ThreadPoolExecutor(max_workers=(max_workers if max_workers > 0 else None)) as executor:
+        asyncio.get_running_loop().set_default_executor(executor)
+
+        match_q: asyncio.Queue[Page] = asyncio.Queue()
+        print_q: asyncio.Queue[Page] = asyncio.Queue()
+
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(Crawler.run(site, match_q))
+            tg.create_task(Matcher.run(match_q, print_q))
+            tg.create_task(Printer.run(print_q))
 
 
 if __name__ == '__main__':
