@@ -41,7 +41,7 @@ class Network(ABC):
 
 
     def __init__(self) -> None:
-        self._cache = Cache(type(self).__name__) # Get class name of instance to separate caching by mode
+        self._cache: Cache | None = None
 
 
     @staticmethod
@@ -88,6 +88,8 @@ class Network(ABC):
 
 
     async def __aenter__(self) -> Self:
+        self._cache = Cache(type(self).__name__)  # Get class name of instance to separate caching by mode
+
         if self._semaphore is None:
             concurrent_requests = Config.get("network.concurrent_requests", 10)
             if concurrent_requests == 0:
