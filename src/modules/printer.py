@@ -24,7 +24,7 @@ class Printer(ABC):
 
 
     @staticmethod
-    async def run(in_q: asyncio.Queue, mode: Literal['console', 'csv'] = Config.get("print.mode", "console")) -> None:
+    async def run(in_q: asyncio.Queue[Page], mode: Literal['console', 'csv'] = Config.get("print.mode", "console")) -> None:
         async with Printer.get(mode) as printer:
             async with asyncio.TaskGroup() as tg:
                 async for page in Pipeline.queue_drain(in_q):

@@ -5,7 +5,7 @@ from modules.crawler import Crawler
 from modules.matcher import Matcher
 from modules.printer import Printer
 
-from data.sites import Site
+from data.sites import Site, Page
 from network.url import Url
 
 from utils.config import Config
@@ -31,8 +31,8 @@ async def main():
     with ThreadPoolExecutor(max_workers=(max_workers if max_workers > 0 else None)) as executor:
         asyncio.get_running_loop().set_default_executor(executor)
 
-        match_q = asyncio.Queue()
-        print_q = asyncio.Queue()
+        match_q: asyncio.Queue[Page] = asyncio.Queue()
+        print_q: asyncio.Queue[Page] = asyncio.Queue()
 
         async with asyncio.TaskGroup() as tg:
             tg.create_task(Crawler.run(site, match_q))

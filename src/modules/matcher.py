@@ -30,7 +30,7 @@ class Matcher:
 
 
     @staticmethod
-    async def match_page(page: Page, out_q: asyncio.Queue) -> None:
+    async def match_page(page: Page, out_q: asyncio.Queue[Page]) -> None:
         if page.content:
             page.matches = await asyncio.get_running_loop().run_in_executor(None, Matcher.match_content, page.content)
 
@@ -38,7 +38,7 @@ class Matcher:
 
 
     @staticmethod
-    async def run(in_q: asyncio.Queue, out_q: asyncio.Queue) -> None:
+    async def run(in_q: asyncio.Queue[Page], out_q: asyncio.Queue[Page]) -> None:
         try:
             async with asyncio.TaskGroup() as tg:
                 async for page in Pipeline.queue_drain(in_q):

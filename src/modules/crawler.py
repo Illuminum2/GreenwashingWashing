@@ -55,7 +55,7 @@ class Crawler:
 
 
     @staticmethod
-    async def crawl_page_recursive(page: Page, out_q: asyncio.Queue, tg: asyncio.TaskGroup, network: Network, depth: int = 0) -> None:
+    async def crawl_page_recursive(page: Page, out_q: asyncio.Queue[Page], tg: asyncio.TaskGroup, network: Network, depth: int = 0) -> None:
         links = await Crawler.crawl_page(page, network)
 
         if links is not None:
@@ -67,7 +67,7 @@ class Crawler:
 
 
     @staticmethod
-    async def run(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = Config.get("crawl.mode", "static")) -> None:
+    async def run(site: Site, out_q: asyncio.Queue[Page], mode: Literal['static', 'dynamic'] = Config.get("crawl.mode", "static")) -> None:
         try:
             async with Network.get(mode=mode) as network:
                 async with asyncio.TaskGroup() as tg:
