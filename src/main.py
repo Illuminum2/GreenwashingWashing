@@ -28,7 +28,7 @@ async def main():
         raise ValueError("Base url is not set")
     base_url = Url(args.url)
 
-    mode = Config.get("crawl.default_mode", passed=("dynamic" if args.dynamic else ("static" if args.static else None)))
+    mode = Config.get("crawl.default_mode", "static", passed=("dynamic" if args.dynamic else ("static" if args.static else None)))
 
     if args.cache_skip:
         Cache.disable()
