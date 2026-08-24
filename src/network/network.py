@@ -88,7 +88,7 @@ class Network(ABC):
 
 
     async def __aenter__(self) -> Self:
-        if self._semaphore is None and Config.has("network.concurrent_requests"):
+        if self._semaphore is None:
             concurrent_requests = Config.get("network.concurrent_requests", 10)
             if concurrent_requests == 0:
                 raise ValueError("Concurrent network requests is set to 0, must be >1 or -1 for unlimited")
