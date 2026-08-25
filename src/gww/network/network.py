@@ -7,10 +7,10 @@ from typing import Literal, Self
 from playwright.async_api import async_playwright, Error as PlaywrightError, TimeoutError as PlaywrightTimeout, Playwright, Browser as PlaywrightBrowser, BrowserContext as PlaywrightContext
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_if_exception, retry_if_exception_type
 
-from utils.cache import Cache
-from network.url import Url
+from gww.utils.cache import Cache
+from gww.network.url import Url
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 class HTTPError(Exception):

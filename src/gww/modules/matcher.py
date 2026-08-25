@@ -1,12 +1,12 @@
 import asyncio
 import re
 
-from utils.pipeline import Pipeline
+from gww.utils.pipeline import Pipeline
 
-from data.sites import Page
-from utils.patterns import Patterns
+from gww.data.sites import Page
+from gww.utils.patterns import Patterns
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 class Matcher:

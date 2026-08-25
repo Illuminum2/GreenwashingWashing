@@ -1,6 +1,6 @@
 [general]
 # Looking to configure the base URL? Run -h
-sitemap_path = "/sitemap.xml" # Url path to sitemap
+sitemap_path = "/sitemap2.xml" # Url path to sitemap
 
 url_mode = "absolute" # 'absolute': remove query and fragment parameters; 'url': keeps them
 
@@ -16,16 +16,6 @@ url_path_exclusion_patterns = [ # Excludes URL paths from getting matched; case-
 letter_strip_pattern = "(?!-)[\\W\\d_]" # Pattern for parts of a word that get stripped before matching; default is every non-letter except '-'
 
 patterns = [ # Patterns that words must match; case-insensitive unless pattern wrapped in '(?-i:...)'
-    # German:
-    "öko",
-    "bio",
-    "umwe",
-    "achhal",
-    "neuerb",
-    "emission",
-    "eut",
-    "ergi",
-    "strom",
     # English:
     "green",
     "ecolog",
@@ -41,6 +31,16 @@ patterns = [ # Patterns that words must match; case-insensitive unless pattern w
     "biodegrad",
     "energ",
     "(?-i:CO)", # Case-sensitive
+    # German:
+    "öko",
+    "bio",
+    "umwe",
+    "achhal",
+    "neuerb",
+    "emission",
+    "eut",
+    "ergi",
+    "strom",
     # Dutch:
     "groen",
     "duurza",
@@ -64,12 +64,12 @@ exclusion_patterns = [ # Pattern that words must not match; Case-insensitive
 
 
 [multithreading]
-concurrent_threads = 5 # -1 for unlimited, 0 for no worker threads
+concurrent_threads = 5 # '-1' for unlimited, >1 for n worker threads
 
 
 [network]
 default_mode = "static" # 'static': use aiohttp (raw network requests); 'dynamic': use playwright (browser instances)
-concurrent_requests = 10 # '-1': unlimited simultaneous network requests
+concurrent_requests = 10 # '-1' for unlimited, >1 for n simultaneous network requests
 
 max_retries = 5 # Maximum retry count for a specific page
 min_retry_delay = 1 # Minimum delay in seconds before next retry attempt
@@ -78,7 +78,7 @@ max_retry_delay = 20 # Maximum delay in seconds before next retry attempt
 
 [crawl]
 default_mode = "static" # 'static': use aiohttp (raw network requests); 'dynamic': use playwright (browser instances)
-max_recursion_depth = 10 # Limit on how many steps can be taken from the site root/sitemap
+max_recursion_depth = 10 # '-1' for unlimited, 0 for n steps that can be taken from the site root/sitemap
 
 static_timeout_ms = 5000 # Time in ms until aiohttp(static) timeout
 dynamic_timeout_ms = 10000 # Time in ms until playwright(dynamic) timeout
@@ -93,5 +93,4 @@ csv_path = "./output.csv" # CSV output file path
 
 
 [cache]
-path = "./cache/" # Directory of the cache
 expiry_s = 3600 # Seconds until a cached value expires; 'None': keep it forever, '0': disable caching

@@ -4,12 +4,12 @@ from typing import Literal
 from html_to_markdown import convert, ConversionOptions
 from lxml import etree
 
-from network.network import Network, HTTPError, NetworkError
+from gww.network.network import Network, HTTPError, NetworkError
 
-from data.sites import Site, Page
-from network.url import Url
+from gww.data.sites import Site, Page
+from gww.network.url import Url
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 class Crawler:

@@ -1,20 +1,34 @@
 import tomllib
 from typing import Any
 from pathlib import Path
+from importlib.resources import files
+
+from platformdirs import user_config_dir
 
 
 class Config:
     _config: dict[str, Any] | None = None
+    _global_config = Path(user_config_dir("gww", ensure_exists=True)) / "config.toml"
+
+
+    @staticmethod
+    def reset() -> Path:
+        Config._global_config.write_bytes((files("gww") / "config.toml").read_bytes()) # Copy the default from the package to the global config
+
+        return Config._global_config
 
 
     @staticmethod
     def _read_config():
         try:
-            with open(Path(__file__).parent.parent.parent / "config.toml", "rb") as file: # tomllib uses binary
+            with open("config.toml", "rb") as file: # tomllib uses binary; config from working directory
                 Config._config = tomllib.load(file)
         except FileNotFoundError:
-            Config._config = {}
-            print("Configuration file could not be found, using defaults")
+            if not Config._global_config.exists():
+                print(f"Global configuration file could not be found, copied default to '{Config.reset()}'")
+
+            with open(Config._global_config, "rb") as file:
+                Config._config = tomllib.load(file)
 
 
     @staticmethod

@@ -3,11 +3,11 @@ import csv
 from abc import ABC, abstractmethod
 from typing import Literal, Self
 
-from utils.pipeline import Pipeline
+from gww.utils.pipeline import Pipeline
 
-from data.sites import Page
+from gww.data.sites import Page
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 class Printer(ABC):

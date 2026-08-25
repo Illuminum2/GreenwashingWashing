@@ -3,9 +3,9 @@ from contextlib import suppress
 import tld
 from yarl import URL
 
-from utils.patterns import Patterns
+from gww.utils.patterns import Patterns
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 class Url:
