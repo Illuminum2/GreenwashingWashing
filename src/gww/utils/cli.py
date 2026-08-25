@@ -2,10 +2,10 @@ import argparse
 import time
 from typing import Literal, Self
 
-from network.url import Url
+from gww.network.url import Url
 
-from utils.cache import Cache
-from utils.config import Config
+from gww.utils.cache import Cache
+from gww.utils.config import Config
 
 
 class Cli:

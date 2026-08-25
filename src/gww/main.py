@@ -1,15 +1,15 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-from modules.crawler import Crawler
-from modules.matcher import Matcher
-from modules.printer import Printer
+from gww.modules.crawler import Crawler
+from gww.modules.matcher import Matcher
+from gww.modules.printer import Printer
 
-from utils.cli import Cli
-from data.sites import Site, Page
-from network.url import Url
+from gww.utils.cli import Cli
+from gww.data.sites import Site, Page
+from gww.network.url import Url
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 async def main(cli: Cli) -> int:

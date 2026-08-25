@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Final, ValuesView
 
-from network.url import Url
+from gww.network.url import Url
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 @dataclass

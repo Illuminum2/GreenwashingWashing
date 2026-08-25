@@ -3,7 +3,7 @@ from typing import Any, Literal
 
 from diskcache import Cache as DiskCache
 
-from utils.config import Config
+from gww.utils.config import Config
 
 
 # https://github.com/grantjenks/python-diskcache/issues/282
