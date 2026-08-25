@@ -19,9 +19,15 @@ class Site:
 
 
     def add_page(self, url: Url, depth: int = 0) -> Page | None:
-        if (url.is_valid(self.base_url)) and (url not in self._pages) and (depth <= Config.get("crawl.max_recursion_depth", 10)):
-            self._pages[url] = Page(url, self, depth)
-            return self._pages[url]
+        if url.is_valid(self.base_url) and url not in self._pages:
+            max_depth = Config.get("crawl.max_recursion_depth", 10)
+
+            if max_depth == 0:
+                raise ValueError("Maximum crawl recursion depth is set to 0, must be >1 or -1 for unlimited")
+
+            if max_depth < 0 or depth <= max_depth:
+                self._pages[url] = Page(url, self, depth)
+                return self._pages[url]
 
 
 @dataclass
