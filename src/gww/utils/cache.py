@@ -15,6 +15,9 @@ class Cache:
     def __init__(self, subfolder: str | None = None):
         self._cache = DiskCache(f"{Config.get("cache.path", user_cache_dir("gww"))}/{subfolder}")
 
+        if Config.get("cache.expiry_s") == 0:
+            Cache.disable()
+
 
     async def store(self, item: Any, value: Any, expire: float | None = Config.get("cache.expiry_s", 3600)) -> Literal[True]:
         #return self._cache.set(item, value, expire=expire)
