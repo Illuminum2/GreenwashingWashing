@@ -8,6 +8,9 @@ from utils.config import Config
 
 # https://github.com/grantjenks/python-diskcache/issues/282
 class Cache:
+    _disabled: bool = False
+
+
     def __init__(self, subfolder: str | None = None):
         self._cache = DiskCache(f"{Config.get("cache.path", __file__ + '/../../cache/')}/{subfolder}")
 
@@ -17,7 +20,10 @@ class Cache:
         return await asyncio.get_running_loop().run_in_executor(None, self._cache.set, item, value, expire)
 
     
-    async def retreive(self, item: Any) -> Any:
+    async def retrieve(self, item: Any) -> Any:
+        if Cache._disabled is True:
+            return None
+        
         #return self._cache.get(item)
         return await asyncio.get_running_loop().run_in_executor(None, self._cache.get, item)
 
@@ -25,3 +31,8 @@ class Cache:
     async def close(self) -> None:
         await asyncio.get_running_loop().run_in_executor(None, self._cache.expire)
         self._cache.close()
+
+
+    @staticmethod
+    def disable():
+        Cache._disabled = True
