@@ -11,6 +11,9 @@ class Patterns:
 
     @staticmethod
     def compile_patterns(patterns: list[str] | None, flags: re._FlagsType = 0) -> re.Pattern:
+        if patterns is None:
+            return Patterns.compile(None)
+
         pattern = '|'.join("(?:%s)" % case for case in patterns) # Merge patterns into one
         
         return Patterns.compile(pattern, flags)

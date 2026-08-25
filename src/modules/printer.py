@@ -24,11 +24,12 @@ class Printer(ABC):
 
 
     @staticmethod
-    async def run(in_q: asyncio.Queue, mode: Literal['console', 'csv'] = Config.get("print.mode", "console")) -> None:
+    async def run(in_q: asyncio.Queue[Page], mode: Literal['console', 'csv'] = Config.get("print.mode", "console")) -> None:
         async with Printer.get(mode) as printer:
             async with asyncio.TaskGroup() as tg:
                 async for page in Pipeline.queue_drain(in_q):
-                    tg.create_task(printer.print_page(page))
+                    if page.matches or (page.errors and not page.url.is_XML):
+                        tg.create_task(printer.print_page(page))
 
 
     async def __aenter__(self) -> Self:
@@ -42,24 +43,23 @@ class Printer(ABC):
 
 class ConsolePrinter(Printer):
     async def print_page(self, page: Page) -> None: # Technically just synchronous
-        if page.matches:
-            print(f"Page '{page.url}': ", end="")
-            print (*page.matches, sep=", ")
+        print(f"Page '{page.url}': ", end="")
+        print (*page.matches, sep=", ")
+        print('\n'.join(page.errors))
 
 
 
 class CsvPrinter(Printer):
     def __init__(self, path: str = Config.get("print.csv_path")) -> None:
         if not path:
-            ValueError("Empty CSV path provided")
+            raise ValueError("Empty CSV path provided")
         self._path = path
         self._file = None
         self._writer = None
 
 
     async def print_page(self, page: Page) -> None:
-        if page.matches or page.error and not page.url.is_XML:
-            self._writer.writerow([page.url, ", ".join(page.matches), page.error])
+        self._writer.writerow([page.url, ", ".join(page.matches), '\n'.join(page.errors)])
 
 
     async def __aenter__(self) -> Self:

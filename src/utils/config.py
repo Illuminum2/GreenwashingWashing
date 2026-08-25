@@ -14,7 +14,7 @@ class Config:
                 Config._config = tomllib.load(file)
         except FileNotFoundError:
             Config._config = {}
-            print("No file")
+            print("Configuration file could not be found, using defaults")
 
 
     @staticmethod

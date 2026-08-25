@@ -18,7 +18,7 @@ class Crawler:
         try:
             page.raw = await network.fetch_url(page.url)
         except (HTTPError, NetworkError, UnicodeDecodeError) as e:
-            page.error = str(e)
+            page.errors.append(str(e))
 
 
     @staticmethod
@@ -26,7 +26,7 @@ class Crawler:
         if page.raw is not None and page.raw != '': # Empty content throws lxml exception
             parser = etree.XMLParser(remove_blank_text=True)
             xml = etree.XML(bytes(page.raw, encoding="utf-8"), parser)
-            page.links = [Url(link, page.url) for link in xml.xpath("//*[local-name() = 'loc']/text()")]
+            page.links = Url.parse_urls(xml.xpath("//*[local-name() = 'loc']/text()"), page.url)
 
             return page.links
 
@@ -36,7 +36,7 @@ class Crawler:
         if page.raw is not None:
             result = convert(page.raw, ConversionOptions(output_format="plain", skip_images=True)) # Parse HTML to text
             page.content = result.content
-            page.links = [Url(link.href, page.url) for link in result.metadata.links]
+            page.links = Url.parse_urls([link.href for link in result.metadata.links], page.url)
 
             return page.links
     
@@ -51,23 +51,23 @@ class Crawler:
             
             return await asyncio.get_running_loop().run_in_executor(None, Crawler._parse_html_page, page)
         except Exception as e:
-            print(e)
+            page.errors.append(str(e))
 
 
     @staticmethod
-    async def crawl_page_recursive(page: Page, out_q: asyncio.Queue, tg: asyncio.TaskGroup, network: Network, depth: int = 0) -> None:
+    async def crawl_page_recursive(page: Page, out_q: asyncio.Queue[Page], tg: asyncio.TaskGroup, network: Network, depth: int = 0) -> None:
         links = await Crawler.crawl_page(page, network)
 
         if links is not None:
             for link in links:
-                if (link_page := page.site.add_page(link, depth)):
+                if link_page := page.site.add_page(link, depth + 1):
                     tg.create_task(Crawler.crawl_page_recursive(link_page, out_q, tg, network, depth+1))
 
         await out_q.put(page)
 
 
     @staticmethod
-    async def run(site: Site, out_q: asyncio.Queue, mode: Literal['static', 'dynamic'] = Config.get("crawl.default_mode", "static")) -> None:
+    async def run(site: Site, out_q: asyncio.Queue[Page], mode: Literal['static', 'dynamic'] = Config.get("crawl.default_mode", "static")) -> None:
         try:
             async with Network.get(mode=mode) as network:
                 async with asyncio.TaskGroup() as tg:
