@@ -1,7 +1,7 @@
 # Greenwashing Washing
 
 Crawls a website and reports every page containing greenwashing related words.
-Pages are fetched asynchronously and every word is matched against the RegEx patterns in [config.toml](config.toml).
+Pages are fetched asynchronously and every word is matched against the RegEx patterns in [config.toml](src/gww/config.toml).
 The matches are written to the console or a CSV file.
 
 This is in response to the [EU Directive 2024/825](https://eur-lex.europa.eu/eli/dir/2024/825/oj/eng), which bans generic unproven environmental claims like "climate neutral" or "eco-friendly".
@@ -29,13 +29,13 @@ playwright install chromium
 
 ## Run
 
-Set the match patterns in [config.toml](config.toml), then pass the target site:
+Set the match patterns in [config.toml](src/gww/config.toml), then pass the target site:
 
 ```bash
 gww <url>
 ```
 
-The URL must include the schema (https/http) and the full host:
+The URL must include the scheme (https/http) and the full host:
 
 ```bash
 gww https://books.toscrape.com/
@@ -49,11 +49,17 @@ gww https://books.toscrape.com/
 - **`-c`, `--cache-skip`**: Skip the cache and always make a new network request
 
 
-- **`-h`, `--help`**: Show the help message and exit
 - **`-r`, `--reset`**: Overwrite the global configuration file with the default and exit
+- **`-h`, `--help`**: Show the help message and exit
 
-Without `-s` or `-d` the scraping mode falls back to [`crawl.default_mode`](config.toml) in [config.toml](config.toml), if that is not defined, `static` is used. 
-The output target is set with [`print.mode`](config.toml), which takes `console` or `csv`.
+Without `-s` or `-d` the scraping mode falls back to [`crawl.default_mode`](src/gww/config.toml) in [config.toml](src/gww/config.toml), if that is not defined, `static` is used. 
+The output target is set with [`print.mode`](src/gww/config.toml), which takes `console` or `csv`.
+
+## Configuration
+
+To override the global configuration, create a [config.toml](src/gww/config.toml) clone to the working directory and edit it:
+
+`cp src/gww/config.toml .`
 
 ## License
 
