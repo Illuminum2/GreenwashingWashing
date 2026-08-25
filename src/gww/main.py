@@ -40,6 +40,10 @@ async def main(cli: Cli) -> int:
     return len(site.pages)
 
 
-if __name__ == '__main__':
+def run():
     with Cli() as cli:
         cli.page_count = asyncio.run(main(cli))
+
+
+if __name__ == '__main__':
+    run()

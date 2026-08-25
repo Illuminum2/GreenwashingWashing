@@ -1,0 +1,34 @@
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13"]
+build-backend = "uv_build"
+
+[project]
+name = "greenwashingwashing"
+version = "0.1.0"
+description = "Crawls a website and reports every page containing greenwashing related words."
+readme = "README.md"
+license = "MIT"
+authors = [
+  {name = "Illuminum2"},
+]
+requires-python = ">=3.14"
+dependencies = [
+    "aiohttp>=3.14.3",
+    "diskcache>=5.6.3",
+    "html-to-markdown>=3.10.4",
+    "lxml>=6.1.1",
+    "platformdirs>=4.6.0",
+    "playwright>=1.62.0",
+    "tenacity>=9.1.4",
+    "tld>=0.13.2",
+    "yarl>=1.24.5",
+]
+
+[project.scripts]
+gww = "gww.main:run"
+
+[project.urls]
+Repository = "https://github.com/Illuminum2/GreenwashingWashing.git"
+
+[tool.uv.build-backend]
+module-name = "gww"
