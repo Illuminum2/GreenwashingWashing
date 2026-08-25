@@ -13,7 +13,7 @@ class Cache:
 
 
     def __init__(self, subfolder: str | None = None):
-        self._cache = DiskCache(f"{Config.get("cache.path", user_cache_dir("gww"))}/{subfolder}")
+        self._cache = DiskCache(f"{Config.get("cache.path", user_cache_dir("gww", ensure_exists=True))}/{subfolder}")
 
         if Config.get("cache.expiry_s") == 0:
             Cache.disable()
