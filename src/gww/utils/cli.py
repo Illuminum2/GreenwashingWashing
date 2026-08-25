@@ -12,6 +12,10 @@ class Cli:
     def __init__(self) -> None:
         self._args = Cli._parse_args()
 
+        if self._args.reset:
+            print(f"Reset the global configuration file '{Config.reset()}' to the default")
+            raise SystemExit
+
         if not self._args.url:
             raise ValueError("Base url is not set")
 
@@ -51,9 +55,10 @@ class Cli:
     def _parse_args() -> argparse.Namespace:
         parser = argparse.ArgumentParser(description="A script crawling a website to report every page containing greenwashing related words. Configure RegEx match patterns in 'config.toml'.")
 
-        parser.add_argument("url", type=str, help="Base website url, must include scheme (https/http) and full host")
+        parser.add_argument("url", type=str, nargs="?", help="Base website url, must include scheme (https/http) and full host")
         parser.add_argument("-s", "--static", action="store_true", help="Use aiohttp requests (raw network requests) for scraping")
         parser.add_argument("-d", "--dynamic", action="store_true", help="Use playwright (chromium instance) for scraping")
         parser.add_argument("-c", "--cache-skip", action="store_true", help="Skip cache and always make new network request")
+        parser.add_argument("-r", "--reset", action="store_true", help="Overwrite the global configuration file with the default and exit")
 
         return parser.parse_args()

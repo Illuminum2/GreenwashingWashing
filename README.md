@@ -47,7 +47,10 @@ gww https://books.toscrape.com/
 - **`-s`, `--static`**: Use aiohttp requests (raw network requests) for scraping
 - **`-d`, `--dynamic`**: Use playwright (chromium instance) for scraping
 - **`-c`, `--cache-skip`**: Skip the cache and always make a new network request
+
+
 - **`-h`, `--help`**: Show the help message and exit
+- **`-r`, `--reset`**: Overwrite the global configuration file with the default and exit
 
 Without `-s` or `-d` the scraping mode falls back to [`crawl.default_mode`](config.toml) in [config.toml](config.toml), if that is not defined, `static` is used. 
 The output target is set with [`print.mode`](config.toml), which takes `console` or `csv`.
