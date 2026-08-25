@@ -1,6 +1,5 @@
 import tomllib
 from typing import Any
-from pathlib import Path
 
 
 class Config:
@@ -10,7 +9,7 @@ class Config:
     @staticmethod
     def _read_config():
         try:
-            with open(Path(__file__).parent.parent.parent / "config.toml", "rb") as file: # tomllib uses binary
+            with open("config.toml", "rb") as file: # tomllib uses binary; config in working directory
                 Config._config = tomllib.load(file)
         except FileNotFoundError:
             Config._config = {}
