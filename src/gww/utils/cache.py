@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Literal
 
 from diskcache import Cache as DiskCache
+from platformdirs import user_cache_dir
 
 from gww.utils.config import Config
 
@@ -12,7 +13,7 @@ class Cache:
 
 
     def __init__(self, subfolder: str | None = None):
-        self._cache = DiskCache(f"{Config.get("cache.path", __file__ + '/../../cache/')}/{subfolder}")
+        self._cache = DiskCache(f"{Config.get("cache.path", user_cache_dir("gww"))}/{subfolder}")
 
 
     async def store(self, item: Any, value: Any, expire: float | None = Config.get("cache.expiry_s", 3600)) -> Literal[True]:
